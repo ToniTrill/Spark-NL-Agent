@@ -7,3 +7,5 @@ AGENTS.md
 
 *__pycache__*/
 *.DS_Store
+
+db/faiss_index

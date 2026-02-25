@@ -549,12 +549,31 @@ def compute_time_breakdown_by_overlap(cb, total_start, total_end):
         "tool_overhead_union": tool_overhead_union,
     }
 
-def run_nl_query(agent, nl_query, llm=None):
+def run_nl_query(agent, nl_query, llm=None, similar=None):
 
     print("--- Starting Agent ---")
     total_start = time.time()
     
     cb = AgentMonitoringCallback()
+
+    #Few shot.
+    few_shot=""
+    if similar and len(similar) > 0:
+        few_shot = "### EXAMPLES OF SIMILAR QUESTIONS AND THEIR CORRESPONDING SQL:\n"
+        few_shot += "Use these examples to understand the table structures and SQL logic required:\n"
+        few_shot += "IMPORTANT: Do not perform exploratory queries. Generate the final SQL query in a single step using JOINs. Your first call to query_sql_db MUST be the final answer."
+        for i, doc in enumerate(similar):
+            ex_question = doc.page_content
+            ex_sql = doc.metadata.get('sql', 'No SQL provided')
+
+            few_shot += f"Example {i+1}:\n"
+            few_shot += f"Question: {ex_question}\n"
+            few_shot += f"SQL: {ex_sql}\n"
+            few_shot += "-------------------\n"
+        few_shot += "\nNow, based on the patterns above, please answer the following user request:\n" 
+
+    full_prompt = few_shot + "User Query: " + nl_query +"\n\n" + config.DEFAULT_PROMPT_SUFIX
+
     
     # Attach callback to the db object so timed_run can access it
     # agent.tools is a list of tools. We need to find the one with the db.
@@ -566,9 +585,9 @@ def run_nl_query(agent, nl_query, llm=None):
                 break
 
     try:
-        nl_query = nl_query + "\n\n" + config.DEFAULT_PROMPT_SUFIX
+        #nl_query = nl_query + "\n\n" + config.DEFAULT_PROMPT_SUFIX
         from langchain_core.messages import HumanMessage
-        response = agent.invoke({"messages": [HumanMessage(content=nl_query)]}, config={"callbacks": [cb]})
+        response = agent.invoke({"messages": [HumanMessage(content=full_prompt)]}, config={"callbacks": [cb]})
         final_answer = response["messages"][-1].content
 
     except AgentEarlyExit as e:
