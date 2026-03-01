@@ -9,3 +9,5 @@ AGENTS.md
 *.DS_Store
 
 db/faiss_index
+*.png
+*.csv
