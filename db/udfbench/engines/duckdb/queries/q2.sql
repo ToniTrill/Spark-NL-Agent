@@ -1,0 +1,1 @@
+select id,res.day,res.month,res.year from(select id,date,extractfromdate(date) as res from artifacts);

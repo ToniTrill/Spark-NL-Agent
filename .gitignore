@@ -11,3 +11,5 @@ AGENTS.md
 db/faiss_index
 *.png
 *.csv
+truncar_net.py
+results/*.txt

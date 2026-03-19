@@ -17,6 +17,7 @@ class SparkSQL:
         ignore_tables: Optional[List[str]] = None,
         include_tables: Optional[List[str]] = None,
         sample_rows_in_table_info: int = 3,
+        udf_info: Optional[str] = None,
     ):
         """Initialize a SparkSQL object.
 
@@ -40,7 +41,7 @@ class SparkSQL:
             raise ImportError(
                 "pyspark is not installed. Please install it with `pip install pyspark`"
             )
-
+        self._udf_info = udf_info or "NO UDF AVAILABLE"
         self._spark = (
             spark_session if spark_session else SparkSession.builder.getOrCreate()
         )
@@ -154,6 +155,7 @@ class SparkSQL:
         if fetch == "one":
             df = df.limit(1)
         return str(self._get_dataframe_results(df))
+        #return self._get_dataframe_results(df)
 
     def get_table_info_no_throw(self, table_names: Optional[List[str]] = None) -> str:
         """Get information about specified tables.
@@ -184,3 +186,6 @@ class SparkSQL:
         except Exception as e:
             """Format the error message"""
             return f"Error: {e}"
+        
+    def get_udf_info(self) -> str:
+        return self._udf_info

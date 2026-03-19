@@ -10,7 +10,7 @@ from langchain_core.language_models import BaseLanguageModel
 if TYPE_CHECKING:
     from langchain_core.runnables import Runnable
 
-from spark_toolkit.prompt import SQL_PREFIX, SQL_SUFFIX
+from spark_toolkit.prompt import SQL_PREFIX, SQL_SUFFIX, SQL_PREFIX_UDFBENCH
 from spark_toolkit.toolkit import SparkSQLToolkit
 
 
@@ -29,6 +29,7 @@ def create_spark_sql_agent(
     early_stopping_method: str = "force",
     verbose: bool = False,
     agent_executor_kwargs: Optional[Dict[str, Any]] = None,
+    use_udf: bool = False,
     **kwargs: Any,
 ) -> Runnable:
     """Construct a Spark SQL agent from an LLM and tools.
@@ -57,6 +58,7 @@ def create_spark_sql_agent(
     from langgraph.prebuilt import create_react_agent
 
     tools = toolkit.get_tools()
+    base_prefix = SQL_PREFIX_UDFBENCH if use_udf else SQL_PREFIX
     prefix = prefix.format(top_k=top_k)
     
     agent = create_react_agent(llm, tools, prompt=prefix)

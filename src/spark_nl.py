@@ -361,7 +361,7 @@ def run_sparksql_query(spark_session, query):
     return result_df, result_obj, duration
 
 
-def get_spark_agent(spark_sql, llm):
+def get_spark_agent(spark_sql, llm, use_udf=False):
 
     original_run = spark_sql.run
 
@@ -413,17 +413,20 @@ def get_spark_agent(spark_sql, llm):
         if error:
             if _no_early_exit:
                 raise
-            raise AgentEarlyExit(...)
+            #raise AgentEarlyExit(...)
+            raise AgentEarlyExit(error)
         else:
             if _no_early_exit:
                 return result
-            raise AgentEarlyExit(...)
+            #raise AgentEarlyExit(...)
+            raise AgentEarlyExit(result)
 
     spark_sql.run = types.MethodType(timed_run, spark_sql)
-    toolkit = SparkSQLToolkit(db=spark_sql, llm=llm)
+    toolkit = SparkSQLToolkit(db=spark_sql, llm=llm, use_udf=use_udf)
     agent = create_spark_sql_agent(
         llm=llm,
         toolkit=toolkit, verbose=True,
+        use_udf=use_udf,
         handle_parsing_errors=parsing_error_handler
     )
 

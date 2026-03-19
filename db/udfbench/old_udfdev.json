@@ -1,0 +1,106 @@
+[
+    {
+        "question_id": 1,
+        "db_id": "udfbench",
+        "question": "What is the ID, along with the year, month, and day of the date, for each artifact?",
+        "evidence": "No evidence",
+        "SQL": "select id,extractyear(date), extractmonth(date), extractday(date) from artifacts;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 2,
+        "db_id": "udfbench",
+        "question": "Extract the day, month, and year from the dates of all artifacts.",
+        "evidence": "No evidence",
+        "SQL": "SELECT * FROM extractfromdate(TABLE((select id,date from artifacts)));",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 3,
+        "db_id": "udfbench",
+        "question": "Show the ID, year, month, and day of the date for all artifacts.",
+        "evidence": "No evidence",
+        "SQL": "select id, extractyear(date), extractmonth_java(date), extractday_scala(date) from artifacts;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 4,
+        "db_id": "udfbench",
+        "question": "What are the average and median number of authors across all artifacts?",
+        "evidence": "No evidence",
+        "SQL": "select aggregate_avg(authors), aggregate_median(authors) from artifacts;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 7,
+        "db_id": "udfbench",
+        "question": "What is the average number of elements in the JSON lists of column 2 and column 3 in the PubMed dataset?",
+        "evidence": "No evidence",
+        "SQL": "select aggregate_avg(jsoncount(column2)),aggregate_avg(jsoncount(column3)) from file_q7('pubmed_q7.txt','json');",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 8,
+        "db_id": "udfbench",
+        "question": "What is the average number of citation targets and the average number of authors per artifact?",
+        "evidence": "No evidence",
+        "SQL": "Select aggregate_avg(jsoncount(target)), aggregate_avg(jsoncount(authorlist))\nfrom artifact_citations,artifact_authorlists where artifact_citations.artifactid=artifact_authorlists.artifactid;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 9,
+        "db_id": "udfbench",
+        "question": "How many co-author pairs can be formed from artifacts that have 50 or fewer authors?",
+        "evidence": "No evidence",
+        "SQL": "select aggregate_count(authorpairs) from  combinations(\n    TABLE(select clean(authorlist) from \n    (select * from artifact_authorlists where jsoncount(authorlist)<=50) zz),2);",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 12,
+        "db_id": "udfbench",
+        "question": "What are the top 10 artifact IDs with the highest number of views over the last 24 months, returning their view counts with added noise?",
+        "evidence": "No evidence",
+        "SQL": "select artifactid, addnoise(COUNT(*)) AS views fROM views_stats \nWHERE TO_TIMESTAMP(cleandate(date), 'yyyy/MM/dd')  >= (CURRENT_TIMESTAMP - INTERVAL 24 MONTH)\ngroup by artifactid \nORDER BY views desc\nLIMIT 10;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 13,
+        "db_id": "udfbench",
+        "question": "List the publication DOIs along with the 6-digit project identifiers extracted from their funding information.",
+        "evidence": "No evidence",
+        "SQL": "SELECT publicationdoi, crossref.projectid \nFROM (\n           SELECT publicationdoi, extractprojectid(fundinginfo) as projectid\n            FROM (\n                        select * from  jsonparse\n                        (TABLE(select column1\n                        from file_q13('crossref.txt','text')) ,'publicationdoi','fundinginfo' )\n                       ) AS T\n             ) AS crossref\n;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 14,
+        "db_id": "udfbench",
+        "question": "What are the author IDs and affiliations of the first authors on their most recent artifacts associated with projects funded by the European Commission?",
+        "evidence": "No evidence",
+        "SQL": "with aa (artifactid, authorid, affiliation, rank, authoridvalue, affiliationvalue ) as       \n( select artifactid, authorid, affiliation, rank,                   \n         jsonparse_q14(authorid, 'value') as authoridvalue,                  \n         jsonparse_q14(affiliation, 'value') as affiliationvalue from artifact_authors        \nwhere affiliation is not null \n      and affiliation <> '[]' \n      and authorid is not null \n      and authorid <> '[]' ) \nselect aa.authoridvalue, aa.affiliationvalue \nfrom aa, artifacts a, projects_artifacts pr, projects p \nwhere aa.rank = 1 and \n      aa.artifactid = a.id and \n      p.id = pr.projectid and \n      pr.artifactid = a.id and \n      p.funder = 'European Commission' and \n      (aa.authorid, cleandate(a.date)) in \n          (select authorid, aggregate_max(cleandate(a.date)) as max_date \n          from artifact_authors as aa, artifacts as a            \n              where aa.rank = 1 and aa.artifactid = a.id            \n          group by authorid);",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 15,
+        "db_id": "udfbench",
+        "question": "Find the publication IDs and their project IDs extracted from Crossref funding information where the Crossref project ID is not already associated with the publication in the existing project records.",
+        "evidence": "No evidence",
+        "SQL": "SELECT artifacts.id, crossref.projectid \nFROM (\n           SELECT publicationdoi, extractprojectid(fundinginfo) as projectid\n            FROM (\n                            select  * from extractkeys\n                            (TABLE(select * from xmlparser\n                            (TABLE(select column1 from file_q13('crossref.xml','text')),'publication')\n                            ),'publicationdoi','fundinginfo' )\n                            \n                       ) xx\n             ) AS crossref, artifacts\nWHERE publicationdoi =artifacts.id\nAND crossref.projectid NOT IN \n     (\n      SELECT extractcode(fundingstring) as projectid \n      FROM projects_artifacts, projects\n      WHERE projects_artifacts.artifactid = artifacts.id \n                     and projects.id =  projects_artifacts.projectid \n     )\n\n;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 16,
+        "db_id": "udfbench",
+        "question": "For each project, identified by its funder, funding class, and project ID, find pairs of co-authors from publications with fewer than 7 authors. Then, count the number of joint publications by these author pairs that were published before the project started, during the project's duration, and after the project ended.",
+        "evidence": "No evidence",
+        "SQL": "WITH pairs(pubid, pubdate, projectstart, projectend, \n           funder, class, projectid, authorpair) as \n    \n(\n    SELECT pubid, pubdate, projectstart, projectend, \n           funder, fclass as class, projectid, authorpair\n    FROM combinations_q16(TABLE(\n            SELECT \n                pubid, pubdate, projectstart, projectend,funder,class,projectid, authorlist\n            FROM \n                (\n                select artifact_authorlists.artifactid as pubid, artifacts.date as pubdate, projects.startdate as projectstart,  projects.enddate as projectend,\n                extractfunder(projects.fundingstring) AS funder, \n                extractclass(projects.fundingstring) AS class,\n                extractid(projects.fundingstring) AS projectid,\n                jsort(jsortvalues(removeshortterms(lowerize(artifact_authorlists.authorlist)))) as authorlist\n                from\n                 projects, projects_artifacts, artifacts,artifact_authorlists  \n                 where projects.id = projects_artifacts.projectid and projects_artifacts.artifactid = artifact_authorlists.artifactid and projects_artifacts.artifactid=artifacts.id \n                 and jsoncount(authorlist)<7 \n                ) x \n\n        ),2) AS xx \n) \nSELECT funder, class, projectid,\n  SUM(CASE WHEN cleandate(pubdate) between pstartcleaned and pendcleaned \n      THEN 1 ELSE NULL END) AS authors_during,\n  SUM(CASE WHEN cleandate(pubdate) < pstartcleaned \n      THEN 1 ELSE NULL END) AS authors_before,\n  SUM(CASE WHEN cleandate(pubdate) > pendcleaned \n      THEN 1 ELSE NULL END) AS authors_after\nFROM (\n    SELECT  projectpairs.funder, projectpairs.class, \n            projectpairs.projectid,\n            cleandate(projectpairs.projectstart) AS pstartcleaned, \n            cleandate(projectpairs.projectend) AS pendcleaned, \n            pairs.authorpair, \n            pairs.pubdate   \n    FROM \n        (\n          SELECT * FROM pairs \n          WHERE projectid IS NOT NULL \n        ) AS projectpairs, pairs \n    WHERE projectpairs.authorpair = pairs.authorpair\n) AS xx\nGROUP BY funder, class, projectid;",
+        "difficulty": "challenging"
+    },
+    {
+        "question_id": 18,
+        "db_id": "udfbench",
+        "question": "What are the top 5 most similar PubMed publications for each arXiv publication based on the most frequent terms in their abstracts?",
+        "evidence": "No evidence",
+        "SQL": "SELECT * FROM (\nselect group_column1 as arxivid, group_column2 as pubmedid, top_s from aggregate_top (TABLE(SELECT arxivid, \n             pubmedid, \n             JACCARD(arxivterms, \n                           pmcterms) \n             AS similarity\n       FROM (SELECT arxivid,\n                    JPACK(\n                    FREQUENTTERMS(\n                    STEM(\n                    FILTERSTOPWORDS(\n                    KEYWORDS(\n                    abstract\n                    ))), 10)) \n                    AS arxivterms\n             FROM (select column1 as arxivid, column2 as abstract from file_q18('arxiv.csv', 'csv') ) xx ) xxx, \n           (SELECT pubmedid, \n                   JPACK(\n                   FREQUENTTERMS(\n                   STEM(\n                   FILTERSTOPWORDS(\n                   KEYWORDS(\n                   abstract\n                   ))), 10)) \n                   AS pmcterms\n             FROM (select column1 as pubmedid, column2 as abstract from file_q18('pubmed.txt', 'json')) zz  )zzz),5,'arxivid','pubmedid','similarity') xxzz\n ) ;",
+        "difficulty": "challenging"
+    }
+]

@@ -1,0 +1,447 @@
+{
+    "queries": [
+        {
+            "id": "Q1",
+            "name": "Date Extraction with Scalar UDFs",
+            "description": "Extract the year, month, and day from a date using three scalar UDFs.",
+            "input": "1 string.",
+            "output": "3 integer values."
+        },
+        {
+            "id": "Q2",
+            "name": "Date Extraction with Table UDF",
+            "description": "Extract the year, month, and day from a date using a single table-returning UDF.",
+            "input": "1 string column.",
+            "output": "3 integer columns."
+        },
+        {
+            "id": "Q3",
+            "name": "Multi-language Scalar UDFs",
+            "description": "Extract the year, month, and day from a date using scalar UDFs implemented in different languages.",
+            "input": "1 string.",
+            "output": "3 integer values."
+        },
+        {
+            "id": "Q4",
+            "name": "Average and Median with Aggregate UDFs",
+            "description": "Compute the average and median author count per artifact using two aggregate UDFs.",
+            "input": "1 integer.",
+            "output": "2 float values."
+        },
+        {
+            "id": "Q5",
+            "name": "Aggregate Calculations with Table UDF",
+            "description": "Compute the average and median author count per artifact using a single table-returning UDF.",
+            "input": "1 integer.",
+            "output": "2 float values."
+        },
+        {
+            "id": "Q6",
+            "name": "File Format Conversion",
+            "description": "Convert and union two disk files (XML and JSON formats) into a single CSV file.",
+            "input": "2 file paths.",
+            "output": "1 CSV file."
+        },
+        {
+            "id": "Q7",
+            "name": "JSON File Analysis",
+            "description": "Analyze a JSON file with publication metadata to compute the average citation and author counts.",
+            "input": "1 file path.",
+            "output": "2 float values."
+        },
+        {
+            "id": "Q8",
+            "name": "Publication Metadata Analysis",
+            "description": "Analyze publication metadata from two tables (author lists and citations) to compute the average citation and author counts.",
+            "input": "2 tables.",
+            "output": "2 float values."
+        },
+        {
+            "id": "Q9",
+            "name": "Author Pair Counting",
+            "description": "Clean author list data and count all possible author pairs for publications with fewer than 50 authors.",
+            "input": "1 table.",
+            "output": "1 integer value."
+        },
+        {
+            "id": "Q10",
+            "name": "Iterative k-Means Clustering",
+            "description": "Perform iterative k-means clustering on publications grouped by type, based on funding amounts accessed through funding projects.",
+            "input": "2 tables.",
+            "output": "3 values (1 string, 1 integer, 1 float)."
+        },
+        {
+            "id": "Q11",
+            "name": "Recursive k-Means Clustering",
+            "description": "Perform recursive k-means clustering on publications grouped by type, based on funding amounts accessed through funding projects.",
+            "input": "2 tables.",
+            "output": "3 values (1 string, 1 integer, 1 float)."
+        },
+        {
+            "id": "Q12",
+            "name": "Noisy Artifact Rankings",
+            "description": "Return the 10 most-viewed artifacts from the past year, adding Gaussian noise to the counts.",
+            "input": "1 table.",
+            "output": "1 string, 1 float."
+        },
+        {
+            "id": "Q13",
+            "name": "JSON Link Extraction",
+            "description": "Extract links between publications and projects from an external JSON file.",
+            "input": "1 file.",
+            "output": "2 string values."
+        },
+        {
+            "id": "Q14",
+            "name": "Recent Author Affiliations",
+            "description": "Return the most recent affiliation of the first author for publications funded by the European Commission.",
+            "input": "4 tables.",
+            "output": "2 string values."
+        },
+        {
+            "id": "Q15",
+            "name": "XML Link Extraction",
+            "description": "Extract links between publications and projects from an external XML file, excluding links that already exist in the database.",
+            "input": "1 file.",
+            "output": "2 string values."
+        },
+        {
+            "id": "Q16",
+            "name": "Author Collaboration Analysis",
+            "description": "Analyze author collaborations within projects by computing:",
+            "input": "4 tables.",
+            "output": "3 string columns and 3 integer columns."
+        },
+        {
+            "id": "Q17",
+            "name": "TF/IDF Computation",
+            "description": "Compute the term frequency-inverse document frequency (TF/IDF) for each term in artifact abstracts.",
+            "input": "1 table.",
+            "output": "2 string values."
+        },
+        {
+            "id": "Q18",
+            "name": "Jaccard Similarity",
+            "description": "Compute Jaccard similarity between document abstracts from two external files and return the top 5 similar documents per source document.",
+            "input": "2 files.",
+            "output": "2 strings, 1 float."
+        },
+        {
+            "id": "Q19",
+            "name": "Project Artifact Linking",
+            "description": "Return the pivoted count of links to artifacts of different types for each project.",
+            "input": "2 tables.",
+            "output": "1 string, 4 integers."
+        },
+        {
+            "id": "Q20",
+            "name": "Date Cleaning and Updating",
+            "description": "Update artifact table dates after cleaning.",
+            "input": "1 table.",
+            "output": "Updated table."
+        },
+        {
+            "id": "Q21",
+            "name": "JSON Link Insertion",
+            "description": "Extract links between publications and projects from a JSON file and insert them into the `projects_artifacts` table.",
+            "input": "1 file.",
+            "output": "Updated table."
+        }
+    ],
+    "udfs": [
+        {
+            "id": "U1",
+            "name": "Addnoise",
+            "description": "Adds Gaussian noise to a value and returns a float",
+            "input_type": "numeric",
+            "output_type": "float"
+        },
+        {
+            "id": "U2",
+            "name": "Clean",
+            "description": "Performs a data cleaning task on the string tokens of a JSON list",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U3",
+            "name": "Cleandate",
+            "description": "Reads a date and converts it to a common format (if needed) and handles problem dates",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U4",
+            "name": "Converttoeuro",
+            "description": "Converts currency to euro, returns a float",
+            "input_type": "numeric",
+            "output_type": "float"
+        },
+        {
+            "id": "U5",
+            "name": "Extractclass",
+            "description": "Extracts class from a string with format `funder::class::projectid`",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U6",
+            "name": "Extractcode",
+            "description": "Extracts project ID from a structured string containing the funder's ID, funding class, and project ID",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U7",
+            "name": "Extractday",
+            "description": "Reads a date (as a string) and extracts an integer with the day",
+            "input_type": "string",
+            "output_type": "int"
+        },
+        {
+            "id": "U8",
+            "name": "Extractfunder",
+            "description": "Extracts funder from a string with format `funder::class::projectid`",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U9",
+            "name": "Extractid",
+            "description": "Extracts project ID from a string with format `funder::class::projectid`",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U10",
+            "name": "Extractmonth",
+            "description": "Reads a date (as a string) and extracts an integer with the month",
+            "input_type": "string",
+            "output_type": "int"
+        },
+        {
+            "id": "U11",
+            "name": "Extractprojectid",
+            "description": "Processes a text snippet and extracts a 6-digit project identifier",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U12",
+            "name": "Extractyear",
+            "description": "Reads a date (as a string) and extracts an integer with the year",
+            "input_type": "string",
+            "output_type": "int"
+        },
+        {
+            "id": "U13",
+            "name": "Filterstopwords",
+            "description": "Removes stopwords from the input text",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U14",
+            "name": "Frequentterms",
+            "description": "Returns a space-separated text containing the most N% frequent tokens",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U15",
+            "name": "Jaccard",
+            "description": "Processes two JSON lists with tokens and calculates the Jaccard distance",
+            "input_type": "json",
+            "output_type": "float"
+        },
+        {
+            "id": "U16",
+            "name": "Jpack",
+            "description": "Converts a string to a JSON list with tokens",
+            "input_type": "P",
+            "output_type": "json"
+        },
+        {
+            "id": "U17",
+            "name": "Jsoncount",
+            "description": "Returns the length of a JSON list",
+            "input_type": "json",
+            "output_type": "int"
+        },
+        {
+            "id": "U18",
+            "name": "Jsort",
+            "description": "Processes a JSON list and returns a sorted JSON list",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U19",
+            "name": "Jsortvalues",
+            "description": "Processes a JSON list, if a value contains more than one token it sorts the value tokens",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U20",
+            "name": "Keywords",
+            "description": "Removes punctuation from text and returns the keywords in one string",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U21",
+            "name": "Log10",
+            "description": "Computes and returns the logarithm",
+            "input_type": "numeric",
+            "output_type": "float"
+        },
+        {
+            "id": "U22",
+            "name": "Lower",
+            "description": "Converts the input text to lowercase",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U23",
+            "name": "Removeshortterms",
+            "description": "Processes a JSON list, if a value contains more than one token it removes tokens with length less than 3 chars",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U24",
+            "name": "Stem",
+            "description": "Stems the input text",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U25",
+            "name": "Avg",
+            "description": "Computes average",
+            "input_type": "numeric",
+            "output_type": "float"
+        },
+        {
+            "id": "U26",
+            "name": "Count",
+            "description": "Computes count",
+            "input_type": "P",
+            "output_type": "int"
+        },
+        {
+            "id": "U27",
+            "name": "Max",
+            "description": "Computes max",
+            "input_type": "P",
+            "output_type": "int"
+        },
+        {
+            "id": "U28",
+            "name": "Median",
+            "description": "Computes median",
+            "input_type": "numeric",
+            "output_type": "numeric"
+        },
+        {
+            "id": "U29",
+            "name": "Extractfromdate",
+            "description": "Reads a date (as string), returns 3 column values (day, month, year)",
+            "input_type": "string",
+            "output_type": "rset"
+        },
+        {
+            "id": "U30",
+            "name": "Jsonparse",
+            "description": "Parses a JSON dict per time and returns a tuple with the values",
+            "input_type": "json",
+            "output_type": "P"
+        },
+        {
+            "id": "U31",
+            "name": "Combinations",
+            "description": "Reads a JSON list and returns a table with all the combinations per an integer parameter",
+            "input_type": "json",
+            "output_type": "P"
+        },
+        {
+            "id": "U32",
+            "name": "Extractkeys",
+            "description": "Selects keys from XML parsed input",
+            "input_type": "xml",
+            "output_type": "P"
+        },
+        {
+            "id": "U33",
+            "name": "Strsplitv",
+            "description": "Processes a string at a time and returns its tokens in separate rows",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U34",
+            "name": "Jgroupordered",
+            "description": "Performs a group by with an aggregate defined as a (named) parameter on a subquery ordered by an attribute",
+            "input_type": "P",
+            "output_type": "P"
+        },
+        {
+            "id": "U35",
+            "name": "Kmeans",
+            "description": "Iterative version of the kmeans function",
+            "input_type": "numeric",
+            "output_type": "P"
+        },
+        {
+            "id": "U36",
+            "name": "Kmeans",
+            "description": "Clusters input data using recursive kmeans, returns cluster id and data point",
+            "input_type": "numeric",
+            "output_type": "P"
+        },
+        {
+            "id": "U37",
+            "name": "Xmlparse",
+            "description": "Parses XML input and returns a table",
+            "input_type": "xml",
+            "output_type": "P"
+        },
+        {
+            "id": "U38",
+            "name": "Pivot",
+            "description": "Converts rows of a specific attribute (optionally grouped by another attribute) into columns, while applying an aggregation within the transformed dataset, and returns one tuple per input group",
+            "input_type": "P",
+            "output_type": "P"
+        },
+        {
+            "id": "U39",
+            "name": "Top",
+            "description": "Processes one group at a time and returns the top N values of an attribute",
+            "input_type": "P",
+            "output_type": "P"
+        },
+        {
+            "id": "U40",
+            "name": "File",
+            "description": "Parses an external file (CSV, XML, JSON) and returns a table",
+            "input_type": "string",
+            "output_type": "P"
+        },
+        {
+            "id": "U41",
+            "name": "Output",
+            "description": "Exports the results of a subquery to local storage in various formats and returns true if it succeeds",
+            "input_type": "P",
+            "output_type": "bool"
+        },
+        {
+            "id": "U42",
+            "name": "getstats",
+            "description": "Inputs a table with integer values and returns the avg and the median for each input column",
+            "input_type": "numeric",
+            "output_type": "float"
+        }
+    ]
+}

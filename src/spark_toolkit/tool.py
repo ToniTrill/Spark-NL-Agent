@@ -16,6 +16,9 @@ from langchain_core.tools import BaseTool
 from spark_toolkit.prompt import QUERY_CHECKER
 from spark_toolkit.spark_sql import SparkSQL
 
+import json, os
+
+UDF_PATH="db/udfbench/udf_catalog.json"
 
 class BaseSparkSQLTool(BaseModel):
     """Base tool for interacting with Spark SQL."""
@@ -133,9 +136,9 @@ class QueryCheckerTool(BaseSparkSQLTool, BaseTool):
     def initialize_llm_chain(cls, values: Dict[str, Any]) -> Any:
         if "llm_chain" not in values:
             from langchain_core.output_parsers import StrOutputParser
-
+            template_to_use = values.get("template", QUERY_CHECKER)
             prompt = PromptTemplate(
-                template=QUERY_CHECKER, input_variables=["query"]
+                template=template_to_use, input_variables=["query"]
             )
             llm = values.get("llm")
             values["llm_chain"] = prompt | llm | StrOutputParser()
@@ -160,3 +163,57 @@ class QueryCheckerTool(BaseSparkSQLTool, BaseTool):
         return await self.llm_chain.ainvoke(
             {"query": query}, config={"callbacks": run_manager.get_child() if run_manager else None}
         )
+class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
+    name: str = "list_udf_sql_db"
+    args_schema: type[BaseModel] = EmptyInput
+    description: str = """Input is an empty string. 
+    Output is a categorized list of custom User Defined Functions (UDFs) for Spark SQL.
+    Use this to identify if a task requires a custom function instead of standard SQL."""
+    
+    def _run(self, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        if not os.path.exists(UDF_PATH):
+            return "ERROR: UDF catalog not found."
+        
+        try:
+            with open(UDF_PATH, "r") as f:
+                data = json.load(f)
+                udfs = data.get("udfs", [])
+            
+            if not udfs:
+                return "No UDFs registered in the catalog."
+
+            #Dividir udf per categories per ajudar al llm
+            scalar_udfs = []
+            aggregate_udfs = []
+            table_udfs = []
+
+            for u in udfs:
+                #el nom sempre en minuscules per evitar el ROUTINE_NOT_FOUND
+                u_info = f"- {u['name'].lower()}: {u['description']} (In: {u['input_type']}, Out: {u['output_type']})"
+                
+                # Decidir categoria
+                u_id = u.get("id", "")
+                if u['output_type'] in ['rset', 'P'] and int(u_id[1:]) > 28:
+                    table_udfs.append(u_info)
+                elif 25 <= int(u_id[1:]) <= 28:
+                    #afegir 'aggregate_' per que al json esta malament
+                    agg_name = f"aggregate_{u['name'].lower()}"
+                    aggregate_udfs.append(f"- {agg_name}: {u['description']}")
+                else:
+                    scalar_udfs.append(u_info)
+
+            output = "AVAILABLE SPARK SQL UDFs (Use lowercase names):\n\n"
+            
+            output += "### 1. SCALAR FUNCTIONS (Use in SELECT or WHERE clauses):\n"
+            output += "\n".join(scalar_udfs) + "\n\n"
+            
+            output += "### 2. AGGREGATE FUNCTIONS (Use for totals/averages. Use these INSTEAD of standard AVG/COUNT):\n"
+            output += "\n".join(aggregate_udfs) + "\n\n"
+            
+            output += "### 3. TABLE FUNCTIONS (UDTFs) (MANDATORY: Use ONLY in FROM clause with TABLE syntax):\n"
+            output += "Syntax: SELECT ... FROM function_name(TABLE(SELECT ...), args)\n"
+            output += "\n".join(table_udfs)
+
+            return output
+        except Exception as e:
+            return f"Error processing UDF catalog: {str(e)}"

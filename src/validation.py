@@ -1,4 +1,5 @@
 import json
+import ast
 
 #convertir cada valor en string i ordenar (per si venen en ordre diferent les respostes)
 # (163, "163", 163.0) -> "163.0", text tot a minuscules i nulls ("None")
@@ -6,6 +7,12 @@ import json
 def normalize(res):
     if not res: 
         return []
+
+    if isinstance(res, str):
+        try:
+            res = ast.literal_eval(res)
+        except (ValueError, SyntaxError):
+            return []
     
     flat_list = []
     for row in res:
@@ -39,7 +46,7 @@ def equals_value(v1, v2, tolerance=0.0001):
         return v1 == v2
 
 #Mira si el resultat de la IA es igual a golden query(al fitxer de respostes ja doant). 
-def validate(spark, nl_query, model_result, json_path="db/bird-1/dev.json"):
+def validate(spark, nl_query, model_result, json_path):
     # Comprova si el resultat de la IA es igual al dels resultats dev.json
     print("-" * 60)
     print("Valiadnt els resultats \n")

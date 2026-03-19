@@ -2,6 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import datetime
+import os
+
+OUTPUT_DIR = "results/heatmap"
 
 def save_heatmap(pivot, title, cbar_label, color, vmin, vmax,filename):
     plt.figure(figsize=(8,5))
@@ -11,7 +14,8 @@ def save_heatmap(pivot, title, cbar_label, color, vmin, vmax,filename):
     plt.ylabel("Data Base")
     plt.tight_layout()
 
-    plt.savefig(filename)
+    full_path = os.path.join(OUTPUT_DIR, filename)
+    plt.savefig(full_path)
     plt.show()
 def heatmap(csv_file):
     df = pd.read_csv(csv_file)
@@ -36,4 +40,5 @@ def heatmap(csv_file):
 
 
 if __name__ == "__main__":
-    heatmap("results_experiment_20260228_172918.csv")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    heatmap("results/csv/results_experiment_20260228_172918.csv")
