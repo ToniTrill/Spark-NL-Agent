@@ -22,7 +22,7 @@ def normalize(res):
         clean_values = []
         for v in values:
             if v is None:
-                clean_values.append("None")
+                clean_values.append("none")
             elif isinstance(v, (float, int, str)):
                 try:
                     #Aixi 163, "163" i 163.00001 es tornen "163.0" conveirtr a float i arodonir
@@ -34,8 +34,8 @@ def normalize(res):
             else:
                 clean_values.append(str(v))
         
-        flat_list.append(tuple(clean_values))        
-    return sorted(flat_list) #ordenar per si l'ordre importes.
+        flat_list.append(tuple(sorted(clean_values)))        
+    return sorted(flat_list) #ordenar les files i columnes.
 
 #Compara valors normalitzats String amb toelrancia
 #Si es poden convertir a numero acepta tolerancia. SI es text comparacio exacta.
@@ -60,7 +60,10 @@ def validate(spark, nl_query, model_result, json_path):
             golden_sql = item["SQL"]
             break
     
-    if not golden_sql: return False
+    if not golden_sql: 
+        print("ERROR: golden SQL, no trobada en el JSON")
+        return False
+    print(f"Golden Query trobada: \n {golden_sql}")
 
     try:
         #Executar el SQL original per aseugrar nos que el resultat es correcte
@@ -71,13 +74,23 @@ def validate(spark, nl_query, model_result, json_path):
         norm_model = normalize(model_result)
         norm_golden = normalize(golden_data)
 
+        print(f"\n Resultats 3 primeres files")
+        print(f" IA : {norm_model[:3]}")
+        print(f"GOLDEN: {norm_golden[:3]}")
+
         if len(norm_model) != len(norm_golden):
+            print(f"ERROR: numero de files diferent")
+            print(f" IA te :{len(norm_model)} files i GOLDEN te: {len(norm_golden)}")
             return False
-        for row_model, row_golden in zip(norm_model, norm_golden):
-            if len(row_model) != len(row_golden):
+        for i, (row_model, row_golden) in enumerate(zip(norm_model, norm_golden)):
+            if not all (equals_value(v1,v2) for v1,v2 in zip(row_model,row_golden)):
+                print(f"\n \n Dfierencia de dades a la fila {i}")
+                print(f"IA diu: {row_model}")
+                print(f"Golden diu: {row_golden}")
                 return False
             if not all(equals_value(v1, v2) for v1, v2 in zip(row_model, row_golden)):
                 return False
+        print("\n Validacio correcte !!!!!!!! -------------")
         return True
     except Exception as e:
         return False

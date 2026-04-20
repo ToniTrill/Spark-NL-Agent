@@ -349,7 +349,8 @@ def run_sparksql_query(spark_session, query):
     
     try:
         # without .collect() we would only measure the Query Parsing Time
-        result_df = spark_session.sql(query)
+        base_df = spark_session.sql(query)
+        result_df = base_df.limit(50001)
         result_obj = result_df.collect()
     except Exception as e:
         error = str(e)
@@ -361,9 +362,12 @@ def run_sparksql_query(spark_session, query):
     return result_df, result_obj, duration
 
 
-def get_spark_agent(spark_sql, llm, use_udf=False):
+def get_spark_agent(spark_sql, llm, use_udf=False, allowed_udfs=None):
 
-    original_run = spark_sql.run
+    
+    if not hasattr(spark_sql, '_already_wrapped'):
+        spark_sql._true_original_run = spark_sql.run
+        spark_sql._already_wrapped = True
 
     def timed_run(self, command, fetch="all", _no_early_exit=False):
         
@@ -374,7 +378,7 @@ def get_spark_agent(spark_sql, llm, use_udf=False):
         start_t = time.time()
 
         try:
-            result = original_run(command, fetch)
+            result = self._true_original_run(command, fetch)
             error = None
         except Exception as e:
             result = None
@@ -406,23 +410,22 @@ def get_spark_agent(spark_sql, llm, use_udf=False):
 
         print(f"\n[Agent_Internal_Log] Spark Query Executed in {duration:.4f}s")
         print("Query:", command)
-        print("Result/Error:", result if error is None else error)
+        print("Result/Error:", result[:300] if error is None else error)
 
         # FORCE EARLY EXIT IMMEDIATELY AFTER FIRST SPARK QUERY
         # but only for the model, not for the golden query execution
-        if error:
-            if _no_early_exit:
-                raise
-            #raise AgentEarlyExit(...)
-            raise AgentEarlyExit(error)
+        if _no_early_exit: #retornar string per tool investigar
+            if error:
+                return f"Spark Error: {error}"
+            return f"Observation: Investigation result: {str(result)}"
         else:
-            if _no_early_exit:
-                return result
-            #raise AgentEarlyExit(...)
-            raise AgentEarlyExit(result)
+            if error:
+                raise AgentEarlyExit(error)
+            else:
+                raise AgentEarlyExit(result)
 
     spark_sql.run = types.MethodType(timed_run, spark_sql)
-    toolkit = SparkSQLToolkit(db=spark_sql, llm=llm, use_udf=use_udf)
+    toolkit = SparkSQLToolkit(db=spark_sql, llm=llm, use_udf=use_udf, allowed_udfs=allowed_udfs)
     agent = create_spark_sql_agent(
         llm=llm,
         toolkit=toolkit, verbose=True,

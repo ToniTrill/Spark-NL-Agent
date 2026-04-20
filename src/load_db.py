@@ -79,6 +79,11 @@ def register_udfs(spark, udfs_dir):
     spark.udtf.register("file_q13", UDTFs["file_q13"].File_q13)
     spark.udtf.register("file_q18", UDTFs["file_q18"].File_q18)
 
+    #UDF repetides en diferets llenguatges
+
+    spark.udf.register("extractday_scala", udf(UDFs["extractday"].extractday, IntegerType()))
+    spark.udf.register("extractmonth_java", udf(UDFs["extractmonth"].extractmonth, IntegerType()))
+
 
 def get_db_path(db_name, benchmark_type):
     if benchmark_type == "bird-1":

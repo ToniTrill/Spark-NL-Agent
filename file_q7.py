@@ -23,13 +23,13 @@ def file(file_path: str, file_type:str):
 
 
     def parse_csv2(file_path):
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r') as file:
             reader = csv.DictReader(file)
             for row in reader:
                 yield tuple(row.values())
 
     def read_json(file_path):
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r') as file:
             first_character = file.read(1)
             file.seek(0)  # Reset the file pointer to the beginning
             if first_character == '[':
@@ -65,7 +65,7 @@ def file(file_path: str, file_type:str):
             yield tuple(record)
 
     def parse_text(file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r') as f:
             lines = f.read().splitlines()
             for _line in lines:
                 yield (_line,)
@@ -83,9 +83,8 @@ def file(file_path: str, file_type:str):
         return None
 
 
-
-@udtf(returnType="column1 STRING, column2 STRING")
-class File_q18:
+@udtf(returnType="column1 STRING, column2 STRING,column3 STRING")
+class File_q7:
     def eval(self, file_path: str, file_type:str):
         return file(f"{file_path}",file_type)
- 
+

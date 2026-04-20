@@ -16,6 +16,10 @@ from dotenv import load_dotenv
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+os.environ["PYTHONIOENCODING"] = "utf-8"
+os.environ["PYTHONUTF8"] = "1"
+
+
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
@@ -48,9 +52,9 @@ client = genai.Client()
 # Configuration
 ALL_AVAILABLE_DATABASES = ['udfbench']
 TEST_DATABASES = ['udfbench'] #De quiens Db es treuen les preguntes
-QUERY_INDICES = [1, 2, 3, 4, 7, 8, 9, 12, 13, 14, 15, 16, 18]#num preguntes que testeijar , 8, 9, 12, 13, 14, 15, 16, 18
+QUERY_INDICES = [ 1, 2, 3, 4, 7, 8, 12, 13, 14, 15, 16, 18 ]#num preguntes que testeijar , 8, 9, 12, 13, 14, 15, 16, 18  1, 2, 3, 4, 7, 8,    
 REPETITIONS = 1 #fer vaires repeticions i agafar la mitjana per fer estudis per variabilitat de la IA
-K =  [0] #probar amb varios valors de K 0,1,2,3,4,5,10
+K =  [3] #probar amb varios valors de K 0,1,2,3,4,5,10
 FAISS_PATH = "db/faiss_index_udv" #a on es guarda la cache faiss
 JSON_PATH='db/udfbench/udfdev.json' #on estan les pregutnes i respostes de la db
 CSV_PATH_OUTPUT = 'results/udf_results_experiment.csv'
@@ -75,9 +79,22 @@ def main():
 
     spark = get_spark_session(extra_configs={
         "spark.jars": spark_jars,
+        "spark.sql.execution.arrow.pyspark.enabled": "false", # Q14
+        "spark.sql.execution.pythonUDF.arrow.enabled": "false",
         "spark.driver.extraClassPath": jdbc_jar,
-        "spark.driver.memory": "4g"
+        "spark.driver.memory": "4g",
+        "spark.executorEnv.PYTHONIOENCODING": "utf-8",
+        "spark.executorEnv.PYTHONUTF8": "1",
+        "spark.yarn.appMasterEnv.PYTHONIOENCODING": "utf-8"
     })
+    #Paths necesaris en preguntes del benchmark
+    files_to_add = ["db/udfbench/dataset/files/tiny/arxiv.csv", "db/udfbench/dataset/files/tiny/crossref.txt"]
+    import shutil
+    for f_path in files_to_add:
+        target = os.path.basename(f_path)
+        if not os.path.exists(target):
+            shutil.copy(f_path, target)
+            print(f"Fitxer copiat a l'arrel per a UDFs: {target}")
 
     #Filtrar les N priemres preguntes dificultat challenging
     with open(JSON_PATH, "r") as f:
@@ -85,42 +102,64 @@ def main():
 
     llm = get_llm(provider=Provider.GOOGLE.value)
     #toolkit = SparkSQLToolkit(db=get_spark_sql(), llm=llm)
-    agent = get_spark_agent(get_spark_sql(), llm)
+    #agent = get_spark_agent(get_spark_sql(), llm)
+
+    #proba experimetnal
+    with open("db/udfbench/udf_mapping.json") as f:
+        udf_mapping = json.load(f)
 
     for db_name in TEST_DATABASES:
         load_tables(spark, db_name, benchmark_type="udfbench")
+        #probisional
+        spark_sql_instance = get_spark_sql()
 
-        #Nomes volem preguntes dificils
         test_questions = []
         for i in QUERY_INDICES:
-            if i <= len(all_data):
-                test_questions.append(all_data[i-1])
-
-        #db que formaran part del few.shot totes excpete la actual
-        fais_db = [db for db in ALL_AVAILABLE_DATABASES if db != db_name]
-
-        #Esborrar faiss anterior
-        if os.path.exists("db/faiss_index_udv"):
-            shutil.rmtree("db/faiss_index_udv")
-            print("FAISS cleaned")
-        
-        vector_store = load_vector(fais_db)
+            test_questions.append(all_data[i-1])
 
         for k in K:
             for rep in range(1, REPETITIONS +1):
                 print(f"\n Executant DB {db_name} K: {k} iteracio numero: {rep}")
-                agent = get_spark_agent(get_spark_sql(), llm, use_udf=True)
+
+                #db que formaran part del few.shot totes excpete la actual
+                #fais_db = [db for db in ALL_AVAILABLE_DATABASES if db != db_name]
+                fais_db = ALL_AVAILABLE_DATABASES
+
+                #Esborrar faiss anterior
+                if os.path.exists("db/faiss_index_udv"):
+                    shutil.rmtree("db/faiss_index_udv")
+                    print("FAISS cleaned")
+                
+                vector_store = load_vector(fais_db)
+                #Probisional
+                #agent = get_spark_agent(get_spark_sql(), llm, use_udf=True)
+
                 correct_count = 0
                 total_in_tokens = 0
                 total_out_tokens = 0
                 for i, test_item in enumerate(test_questions):
+
+                    print(f'\n Pregunta nuemro Q{test_item["question_id"]}')
+
+                    similar=[]
+
+                    #proba exepriemtnal nomes udf de la pregunta actual
+                    q_id = str(test_item["question_id"])
+                    allowed = udf_mapping.get(q_id)
+
+                    agent = get_spark_agent(spark_sql_instance, llm, use_udf=True, allowed_udfs=None)  # o posar allowed si nomes UDF de la golden query
+                    
                     query = test_item["question"]
 
-                    if k == 0 or vector_store is None:
-                        similar = None
-                    else:
-                        similar = vector_store.similarity_search(query, k=k)
+                    #FI
 
+                    if k == 0 or vector_store is None:
+                        raw_similar = None
+                    else:
+                        raw_similar = vector_store.similarity_search(query, k=k+1) #sempre trobara primera la pregunta actual que descaratem
+                            
+                    if raw_similar is not None:        
+                        similar = [doc for doc in raw_similar if doc.page_content.strip().lower() != query.strip().lower()]
                     run_nl_query(agent, query, llm, similar)
                     time.sleep(2)
                     model_output = process_result()
@@ -136,7 +175,7 @@ def main():
                         print(" Resultat CORRECTE")
                     else:
                         print(f"Resultat INCORRECTE")
-                        print(f"DEBUG: Model result: {model_data}")
+                        print(f"DEBUG: Model result: {str(model_data)[:500] if model_data else 'None'}")
                 avg_in = total_in_tokens / len(test_questions) if test_questions else 0
                 avg_out = total_out_tokens / len(test_questions) if test_questions else 0
                 accuracy = (correct_count/len(test_questions)) * 100 if test_questions else 0

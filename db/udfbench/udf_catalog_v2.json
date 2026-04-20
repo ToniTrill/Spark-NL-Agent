@@ -1,0 +1,316 @@
+{
+    "udfs": [
+        {
+            "id": "U1",
+            "name": "addnoise",
+            "category": "scalar",
+            "description": "Adds Gaussian noise to an integer value and returns the result as a float.",
+            "input_type": "int",
+            "output_type": "float"
+        },
+        {
+            "id": "U2",
+            "name": "clean",
+            "category": "scalar",
+            "description": "Parses a JSON-encoded list of strings, converts them to lowercase, filters out words shorter than three characters, sorts words internally within each string, and returns the alphabetically sorted overall list as a JSON string.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U3",
+            "name": "cleandate",
+            "category": "scalar",
+            "description": "Reads a date string and converts it to a standardized format, handling partial dates by defaulting the day to '01' and swapping hyphens or slashes appropriately.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U4",
+            "name": "converttoeuro",
+            "category": "scalar",
+            "description": "Converts a given currency amount to Euros based on a predefined dictionary of exchange rates.",
+            "input_type": "float, str",
+            "output_type": "float"
+        },
+        {
+            "id": "U5",
+            "name": "extractclass",
+            "category": "scalar",
+            "description": "Extracts the class portion from a formatted project string by splitting it at the '::' delimiter and returning the second element.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U6",
+            "name": "extractcode",
+            "category": "scalar",
+            "description": "Extracts the project ID from a structured string containing the funder's ID, funding class, and project ID separated by '::'.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U7",
+            "name": "extractday",
+            "category": "scalar",
+            "description": "Extracts the day as an integer from a given date string by parsing the substring after the last hyphen.",
+            "input_type": "str",
+            "output_type": "int"
+        },
+        {
+            "id": "U8",
+            "name": "extractfunder",
+            "category": "scalar",
+            "description": "Extracts the funder portion from a project string formatted as 'funder::class::projectid' by returning the substring before the first double colon.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U9",
+            "name": "extractid",
+            "category": "scalar",
+            "description": "Extracts the third element from a string separated by a double colon (::), returning None if the string is empty or lacks sufficient elements.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U10",
+            "name": "extractmonth",
+            "category": "scalar",
+            "description": "Extracts the month as an integer from a given hyphen-separated date string.",
+            "input_type": "str",
+            "output_type": "int"
+        },
+        {
+            "id": "U11",
+            "name": "extractprojectid",
+            "category": "scalar",
+            "description": "Extracts the first exactly six-digit project identifier from a given text string.",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U12",
+            "name": "extractyear",
+            "category": "scalar",
+            "description": "Extracts and returns the year as an integer from a provided date string.",
+            "input_type": "str",
+            "output_type": "int"
+        },
+        {
+            "id": "U13",
+            "name": "filterstopwords",
+            "category": "scalar",
+            "description": "Processes an input text string and returns it after removing stopwords using a predefined multilingual list.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U14",
+            "name": "frequentterms",
+            "category": "scalar",
+            "description": "Extracts and returns the top N most frequent lowercase words from a given string as a space-separated text.",
+            "input_type": "string, int",
+            "output_type": "string"
+        },
+        {
+            "id": "U15",
+            "name": "jaccard",
+            "category": "scalar",
+            "description": "Calculates the Jaccard similarity index between two JSON-formatted lists of tokens.",
+            "input_type": "str, str",
+            "output_type": "float"
+        },
+        {
+            "id": "U16",
+            "name": "jpack",
+            "category": "scalar",
+            "description": "Converts a string into a JSON-formatted string containing a list of its word tokens.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U17",
+            "name": "jsoncount",
+            "category": "scalar",
+            "description": "Returns the number of elements in a JSON string if it is a list, otherwise returns 1.",
+            "input_type": "str",
+            "output_type": "int"
+        },
+        {
+            "id": "U18",
+            "name": "jsonparse",
+            "category": "scalar",
+            "description": "SCALAR version. Extracts ONE value from a single JSON string. Use only in SELECT for simple tasks. Returns a string. Example: jsonparse(column, 'key').",
+            "input_type": "string, string",
+            "output_type": "string"
+        },
+        {
+            "id": "U19",
+            "name": "jsort",
+            "category": "scalar",
+            "description": "Parses a JSON-formatted string representing a list, sorts its elements, and returns the result as a new JSON string, defaulting to an empty list upon failure.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U20",
+            "name": "jsortvalues",
+            "category": "scalar",
+            "description": "Parses a JSON array of strings, alphabetically sorts the space-separated tokens within each string, and returns the modified array as a JSON string.",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U21",
+            "name": "keywords",
+            "category": "scalar",
+            "description": "Removes punctuation from the input text and returns the extracted alphanumeric keywords as a single space-separated string.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U22",
+            "name": "log_10",
+            "category": "scalar",
+            "description": "Calculates the base-10 logarithm of a given floating-point number, returning 0.0 in case of an exception.",
+            "input_type": "float",
+            "output_type": "float"
+        },
+        {
+            "id": "U23",
+            "name": "lowerize",
+            "category": "scalar",
+            "description": "Converts the input text to lowercase.",
+            "input_type": "string",
+            "output_type": "string"
+        },
+        {
+            "id": "U24",
+            "name": "removeshortterms",
+            "category": "scalar",
+            "description": "Parses a JSON-encoded list of strings and removes any space-separated tokens shorter than three characters from each string.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U25",
+            "name": "stem",
+            "category": "scalar",
+            "description": "Stems the words in the input text using the Porter2 stemming algorithm.",
+            "input_type": "str",
+            "output_type": "str"
+        },
+        {
+            "id": "U26",
+            "name": "aggregate_avg",
+            "category": "aggregate",
+            "description": "Calculates the average of a given series of values, ignoring nulls and non-numeric entries.Calculates average. Note: Ensure you handle duplicates correctly by grouping first if necessary.",
+            "input_type": "pd.Series",
+            "output_type": "float"
+        },
+        {
+            "id": "U27",
+            "name": "aggregate_count",
+            "category": "aggregate",
+            "description": "Calculates the count of non-null values in a given series.",
+            "input_type": "pd.Series",
+            "output_type": "int"
+        },
+        {
+            "id": "U28",
+            "name": "aggregate_max",
+            "category": "aggregate",
+            "description": "Calculates the maximum value within a series or group of values while ignoring nulls.",
+            "input_type": "pd.Series",
+            "output_type": "string"
+        },
+        {
+            "id": "U29",
+            "name": "aggregate_median",
+            "category": "aggregate",
+            "description": "Calculates the median of a given series of values by first coercing them to numeric types and dropping any nulls.",
+            "input_type": "pandas.Series",
+            "output_type": "double"
+        },
+        {
+            "id": "U30",
+            "name": "aggregate_top",
+            "category": "table",
+            "description": "Groups data by a specified column and Returns columns: group_column1, group_column2, top_s.",
+            "input_type": "Row, int, str, str, str",
+            "output_type": "rset"
+        },
+        {
+            "id": "U31",
+            "name": "combinations",
+            "category": "table",
+            "description": "Reads a JSON-formatted list and returns a table containing all possible combinations of its elements based on a specified integer parameter.",
+            "input_type": "str, int",
+            "output_type": "rset"
+        },
+        {
+            "id": "U32",
+            "name": "combinations_q16",
+            "category": "table",
+            "description": "Parses a JSON-encoded list from the eighth element of an input row to generate all combinations of length N, Returns columns: pubid, pubdate, projectstart, projectend, funder, fclass, projectid, authorpair.",
+            "input_type": "Row, int",
+            "output_type": "rset"
+        },
+        {
+            "id": "U33",
+            "name": "extractfromdate",
+            "category": "table",
+            "description": "Extracts the year, month, and day components as integers from a hyphen-separated date string and returns them alongside a provided identifier.",
+            "input_type": "list",
+            "output_type": "rset"
+        },
+        {
+            "id": "U34",
+            "name": "extractkeys",
+            "category": "table",
+            "description": "Parses a list of JSON-formatted strings and extracts the values associated with two specified keys as a set of rows.",
+            "input_type": "list, str, str",
+            "output_type": "rset"
+        },
+        {
+            "id": "U35",
+            "name": "file_q13",
+            "category": "table",
+            "description": "MANDATORY for CrossRef project data. Use: file_q13('crossref.txt', 'text'). Returns column: column1 (JSON string). Use jsonparse(TABLE(SELECT column1...)) to extract fields.You MUST pass this column to jsonparse(TABLE(SELECT column1...), 'key') to get the final values",
+            "input_type": "string (filepath), string (format)",
+            "output_type": "rset"
+        },
+        {
+            "id": "U36",
+            "name": "file_q18",
+            "category": "table",
+            "description": "MANDATORY for ArXiv abstracts. Use: file_q18('arxiv.csv', 'csv'). Returns columns: column1 (id), column2 (abstract)",
+            "input_type": "string (filepath), string (format)",
+            "output_type": "rset"
+        },
+        {
+            "id": "U37",
+            "name": "file_q7",
+            "category": "table",
+            "description": "MANDATORY for PubMed citations. Use: file_q7('pubmed_q7.txt', 'json'). Returns: column1 (id), column2 (citations JSON), column3 (authors JSON). MANDATORY: Use these column names.",
+            "input_type": "string (filepath), string (format)",
+            "output_type": "rset"
+        },
+        {
+            "id": "U38",
+            "name": "jsonparse",
+            "category": "table",
+            "description": "TABLE version (UDTF). Extracts TWO keys from a relation of JSON strings. MANDATORY for file processing. Use ONLY in FROM clause with TABLE syntax. Returns two columns named after the keys. Example: FROM jsonparse(TABLE(SELECT column1 FROM ...), 'key1', 'key2').",
+            "input_type": "TABLE, string, string",
+            "output_type": "rset"
+        },
+        {
+            "id": "U39",
+            "name": "xmlparser",
+            "category": "table",
+            "description": "Parses a list of XML content strings into a single document and returns a table of JSON-formatted records extracted from a specified XML element.",
+            "input_type": "list, str",
+            "output_type": "rset"
+        }
+    ]
+}

@@ -17,8 +17,8 @@ def get_embeddings():
                 task_type="RETRIEVAL_QUERY",                
                 dimensions=768,                             
             )
-
-def load_vector(db_id_array):
+#crear la faiss excpete la pregunta actual cas UDF
+def load_vector(db_id_array, udf_actual_question=None):
     embeddings = get_embeddings()
     #carregar o crear nova cache faiss
     if  os.path.exists(FAISS_PATH):
@@ -33,7 +33,7 @@ def load_vector(db_id_array):
                 data= json.load(f)
             documents = []
             for item in data:
-                if item["db_id"] in db_id_array:
+                if item["db_id"] in db_id_array and item["db_id"] != udf_actual_question:
                     doc = Document(
                         page_content=item["question"],
                         metadata={

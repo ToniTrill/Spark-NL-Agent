@@ -150,7 +150,7 @@ class SparkSQL:
     def _get_dataframe_results(self, df: DataFrame) -> list:
         return list(map(self._convert_row_as_tuple, df.collect()))
 
-    def run(self, command: str, fetch: str = "all") -> str:
+    def run(self, command: str, fetch: str = "all", **kwargs: Any) -> str:
         df = self._spark.sql(command)
         if fetch == "one":
             df = df.limit(1)
@@ -173,7 +173,7 @@ class SparkSQL:
             """Format the error message"""
             return f"Error: {e}"
 
-    def run_no_throw(self, command: str, fetch: str = "all") -> str:
+    def run_no_throw(self, command: str, fetch: str = "all", **kwargs: Any) -> str:
         """Execute a SQL command and return a string representing the results.
 
         If the statement returns rows, a string of the results is returned.
@@ -182,7 +182,7 @@ class SparkSQL:
         If the statement throws an error, the error message is returned.
         """
         try:
-            return self.run(command, fetch)
+            return self.run(command, fetch, **kwargs)
         except Exception as e:
             """Format the error message"""
             return f"Error: {e}"

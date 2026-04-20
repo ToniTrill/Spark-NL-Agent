@@ -1,0 +1,83 @@
+{
+  "1": [
+    "extractday",
+    "extractmonth",
+    "extractyear"
+  ],
+  "2": [
+    "extractfromdate"
+  ],
+  "3": [
+    "extractday_scala",
+    "extractmonth_java",
+    "extractyear"
+  ],
+  "4": [
+    "aggregate_avg",
+    "aggregate_median"
+  ],
+  "5": [],
+  "6": [],
+  "7": [
+    "jsoncount",
+    "aggregate_avg",
+    "file_q7"
+  ],
+  "8": [
+    "jsoncount",
+    "aggregate_avg"
+  ],
+  "9": [
+    "clean",
+    "jsoncount",
+    "aggregate_count",
+    "combinations"
+  ],
+  "10": [],
+  "11": [],
+  "12": [
+    "addnoise",
+    "cleandate"
+  ],
+  "13": [
+    "extractprojectid",
+    "jsonparse",
+    "file_q13"
+  ],
+  "14": [
+    "cleandate",
+    "aggregate_max",
+    "jsonparse_q14"
+  ],
+  "15": [
+    "extractcode",
+    "extractprojectid",
+    "extractkeys",
+    "xmlparse",
+    "file_q13"
+  ],
+  "16": [
+    "cleandate",
+    "extractclass",
+    "extractfunder",
+    "extractid",
+    "jsoncount",
+    "jsort",
+    "jsortvalues",
+    "lowerize",
+    "removeshortterms",
+    "combinations_q16"
+  ],
+  "17": [],
+  "18": [
+    "filterstopwords",
+    "frequentterms",
+    "jaccard",
+    "jpack",
+    "keywords",
+    "stem",
+    "top",
+    "file_q18",
+    "aggregate_top"
+  ]
+}
