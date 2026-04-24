@@ -138,9 +138,9 @@
         },
         {
             "id": "U18",
-            "name": "jsonparse",
+            "name": "jsonparse_q14",
             "category": "scalar",
-            "description": "SCALAR version. Extracts ONE value from a single JSON string. Use only in SELECT for simple tasks. Returns a string. Example: jsonparse(column, 'key').",
+            "description": "SCALAR version. Extracts ONE value from a single JSON string. Registered specifically as jsonparse_q14. Use only in SELECT for simple tasks.",
             "input_type": "string, string",
             "output_type": "string"
         },
@@ -311,6 +311,22 @@
             "description": "Parses a list of XML content strings into a single document and returns a table of JSON-formatted records extracted from a specified XML element.",
             "input_type": "list, str",
             "output_type": "rset"
+        },
+        {
+            "id": "U40",
+            "name": "extractday_scala",
+            "category": "scalar",
+            "description": "Scala-compatible version of extractday. Extracts the day as an integer from a given date string.",
+            "input_type": "str",
+            "output_type": "int"
+        },
+        {
+            "id": "U41",
+            "name": "extractmonth_java",
+            "category": "scalar",
+            "description": "Java-compatible version of extractmonth. Extracts the month as an integer from a given hyphen-separated date string.",
+            "input_type": "str",
+            "output_type": "int"
         }
     ]
 }

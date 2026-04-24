@@ -14,3 +14,4 @@ db/faiss_index
 *.txt
 truncar_net.py
 results/*.txt
+*.log

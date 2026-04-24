@@ -1,0 +1,254 @@
+[
+    {
+        "question_id": 1,
+        "db_id": "udfbench",
+        "question": "What are the IDs, along with the year, month, and day of the date for all artifacts?",
+        "evidence": "No evidence",
+        "SQL": "select id,extractyear(date), extractmonth(date), extractday(date) from artifacts;",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.08,
+        "justifications": [
+            "The question is straightforward and directly maps to the database schema. No external knowledge or reasoning is required. The data schema is simple, involving only one table. The SQL query is simple, utilizing basic SELECT statements with date extraction functions without any joins, grouping, or subqueries.",
+            "The question is straightforward and explicitly asks for specific fields. No external knowledge or reasoning is required. The data complexity is low as it involves a single table with standard column types. The SQL query is simple, utilizing only a basic SELECT statement with standard date extraction functions.",
+            "The question is very straightforward and maps directly to the required columns (1). Reasoning requires the use of UDFs (extractyear, extractmonth, extractday) to parse the date parts, fulfilling the criteria for a score of 2. Data complexity is low as it queries a single table with straightforward data types (1). The SQL complexity is also low, consisting of a simple SELECT statement without any joins, grouping, or subqueries (1)."
+        ]
+    },
+    {
+        "question_id": 2,
+        "db_id": "udfbench",
+        "question": "For each artifact, what is the day, month, and year of its date?",
+        "evidence": "No evidence",
+        "SQL": "SELECT * FROM extractfromdate(TABLE((select id,date from artifacts)));",
+        "difficulty": "MODERATE",
+        "avg_score": 1.5,
+        "justifications": [
+            "The question is straightforward and explicitly asks for the day, month, and year for each artifact. Knowledge reasoning requires the use of a specific UDF ('extractfromdate') to extract the components from the date field. The data complexity is simple, involving only a single 'artifacts' table. The SQL complexity is moderate as it involves passing a subquery to a UDF using the TABLE() function.",
+            "The question clearly asks for the day, month, and year of each artifact's date, making it straightforward to understand. Knowledge reasoning requires the use of a specific UDF ('extractfromdate') to parse the date parts. Data complexity is low as it involves a single, simple table. SQL complexity is moderate due to the nested use of a subquery inside a TABLE() function passed into the UDF.",
+            "The question is straightforward and explicitly asks for day, month, and year extractions (1). The query relies on a User-Defined Function (UDF) 'extractfromdate' to process the logic, which requires external reasoning (2). The data schema is simple, utilizing only 'id' and 'date' from an 'artifacts' table (1). The SQL involves passing a subquery as a TABLE argument to a function, which adds moderate structural complexity beyond a basic SELECT statement (2)."
+        ]
+    },
+    {
+        "question_id": 3,
+        "db_id": "udfbench",
+        "question": "Show the ID along with the year, month, and day extracted from the date for each artifact.",
+        "evidence": "No evidence",
+        "SQL": "select id, extractyear(date), extractmonth_java(date), extractday_scala(date) from artifacts;",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.25,
+        "justifications": [
+            "The question is straightforward and explicitly states the required columns to retrieve (Question Understanding = 1). The target SQL relies on custom User-Defined Functions (UDFs) like extractmonth_java and extractday_scala to parse the date, necessitating external function knowledge (Knowledge Reasoning = 2). The query only interacts with a single table with straightforward column mappings (Data Complexity = 1). The SQL itself is highly simple, consisting only of a basic SELECT statement without joins, aggregations, or subqueries (SQL Complexity = 1).",
+            "The question is straightforward and directly maps to the requested columns. It requires the use of specific User-Defined Functions (UDFs) like extractmonth_java and extractday_scala to parse the date, which elevates the knowledge reasoning score. The data complexity is low as it queries a single table, and the SQL complexity is simple, utilizing only a basic SELECT statement without joins, grouping, or subqueries.",
+            "The question is highly straightforward and explicitly asks for specific columns (score 1). However, the query relies on specific, non-standard User-Defined Functions (UDFs) like 'extractmonth_java' and 'extractday_scala' to parse the dates, which requires external database knowledge of these UDFs (score 2). The underlying data involves a single table with a simple schema (score 1). The SQL itself is very simple, consisting only of a basic SELECT statement with no joins, subqueries, or complex filtering (score 1)."
+        ]
+    },
+    {
+        "question_id": 4,
+        "db_id": "udfbench",
+        "question": "What is the average and median number of authors?",
+        "evidence": "No evidence",
+        "SQL": "select aggregate_avg(authors), aggregate_median(authors) from artifacts;",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.0,
+        "justifications": [
+            "The question is straightforward and asks for basic statistical measures. No external knowledge is required as it maps directly to the schema. The data complexity is low since it only involves a single column from one table, and the SQL consists of a simple SELECT statement with aggregate functions.",
+            "The question is straightforward and directly asks for two specific aggregations (average and median). No external knowledge or complex data reasoning is required. The target SQL is simple, querying a single table with two aggregation functions and no joins or conditional filtering.",
+            "The question is straightforward and easy to understand. No external knowledge or evidence is required to formulate the query. The data complexity is low, as it queries a single column from a single table. The SQL complexity is also low, consisting of a simple SELECT statement with two basic aggregate functions."
+        ]
+    },
+    {
+        "question_id": 5,
+        "db_id": "test",
+        "question": "test",
+        "evidence": "test",
+        "SQL": "test",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.0,
+        "justifications": [
+            "The provided example consists entirely of placeholder 'test' strings for the question, evidence, and target SQL, with no database schema provided. Therefore, it requires no real understanding, reasoning, or complex SQL structures, resulting in the lowest possible difficulty scores across all categories.",
+            "The provided example is a placeholder ('test') for the question, evidence, and SQL query. There is no database schema provided. Therefore, it requires no thought to understand, no external knowledge, has no data complexity, and involves no complex SQL components.",
+            "The provided question, evidence, and target SQL are merely placeholder 'test' strings, and no database schema is provided. Therefore, there is no actual logic, reasoning, or complex structure to evaluate, resulting in the minimum score of 1 for all criteria."
+        ]
+    },
+    {
+        "question_id": 6,
+        "db_id": "test",
+        "question": "test",
+        "evidence": "test",
+        "SQL": "test",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.0,
+        "justifications": [
+            "The provided question, evidence, and target SQL are all simply the placeholder word 'test' with an empty database schema. Since this is a dummy example lacking any real entities, logic, or valid SQL query structures, it receives the lowest possible complexity score across all evaluation criteria.",
+            "The provided example consists entirely of dummy 'test' values for the question, evidence, and target SQL, with an empty database schema. As there is no actual logic, reasoning, schema complexity, or SQL syntax to evaluate, it defaults to the lowest baseline score of 1 for all criteria.",
+            "The provided question, evidence, and target SQL are all placeholder 'test' strings with no actual database schema. Therefore, no reasoning, understanding, or SQL logic is required, resulting in the lowest possible complexity score across all categories."
+        ]
+    },
+    {
+        "question_id": 7,
+        "db_id": "udfbench",
+        "question": "What is the average number of elements in the JSON lists of column 2 and column 3 in the PubMed dataset?",
+        "evidence": "No evidence",
+        "SQL": "select aggregate_avg(jsoncount(column2)),aggregate_avg(jsoncount(column3)) from file_q7('pubmed_q7.txt','json');",
+        "difficulty": "MODERATE",
+        "avg_score": 1.75,
+        "justifications": [
+            "The question is straightforward and directly asks for the average element counts for two specific columns (Question Understanding: 1). The query requires knowledge of specific UDFs/custom functions like 'jsoncount', 'aggregate_avg', and 'file_q7' to read the dataset and parse the arrays, since no external evidence is provided to guide this (Knowledge Reasoning: 2). The data itself is somewhat complex as it involves dealing with JSON lists embedded within a text file accessed via a table function (Data Complexity: 2). The SQL complexity is moderate; it uses nested functions and table-valued functions but does not involve joins, groupings, or subqueries (SQL Complexity: 2).",
+            "The question is straightforward and clearly specifies the required columns and aggregations (1). However, it requires implicit knowledge of specific UDFs such as 'aggregate_avg', 'jsoncount', and 'file_q7' to process the dataset (2). The data complexity is elevated due to the presence of JSON lists and the need to query directly from a text file (2). The SQL structure is a simple single-block SELECT, but involves nested function calls and UDFs, adding a slight layer of complexity (2).",
+            "The question is straightforward and explicitly asks for the average number of JSON list elements in two columns (Question Understanding: 1). It requires knowing specific UDFs like 'file_q7', 'jsoncount', and 'aggregate_avg' to access and process the data (Knowledge Reasoning: 2). The data involves reading JSON arrays from a text file, which adds complexity to the values being processed (Data Complexity: 2). The SQL query uses nested UDFs to perform the calculations, making it moderately complex despite lacking joins or subqueries (SQL Complexity: 2)."
+        ]
+    },
+    {
+        "question_id": 8,
+        "db_id": "udfbench",
+        "question": "What is the average number of citations and the average number of authors per artifact?",
+        "evidence": "No evidence",
+        "SQL": "Select aggregate_avg(jsoncount(target)), aggregate_avg(jsoncount(authorlist)) from artifact_citations,artifact_authorlists where artifact_citations.artifactid=artifact_authorlists.artifactid;",
+        "difficulty": "MODERATE",
+        "avg_score": 1.75,
+        "justifications": [
+            "The question is straightforward and clearly asks for two average metrics per artifact (Score 1). Knowledge reasoning requires understanding how to handle JSON arrays using specific UDFs like 'jsoncount' and 'aggregate_avg' (Score 2). Data complexity is moderate because citations and authors are stored as complex JSON array values within the columns (Score 2). The SQL complexity is moderate, involving an implicit JOIN between two tables and the use of nested UDFs for counting and aggregating (Score 2).",
+            "The question is straightforward and explicitly asks for two distinct averages (1). Knowledge reasoning requires familiarity with specific UDFs like 'jsoncount' and 'aggregate_avg' to process the data appropriately (2). Data complexity is moderate because the citations ('target') and 'authorlist' are stored as JSON arrays or complex objects rather than simple atomic values (2). The SQL complexity is moderate as well; it requires an implicit join and nested UDF/aggregate functions, but lacks advanced subqueries or complex window functions (2).",
+            "The question is straightforward and clearly asks for two specific averages (Score 1). Knowledge reasoning requires understanding and applying UDFs like 'jsoncount' and 'aggregate_avg' to calculate the values, even though no external evidence is explicitly provided (Score 2). The data involves complex JSON values that need to be parsed and counted, rather than simple scalar fields (Score 2). The SQL complexity is moderate, requiring a join between two tables and the use of nested functions/UDFs for aggregation (Score 2)."
+        ]
+    },
+    {
+        "question_id": 9,
+        "db_id": "udfbench",
+        "question": "How many author pairs can be generated from artifact author lists that contain 50 or fewer authors?",
+        "evidence": "No evidence",
+        "SQL": "select aggregate_count(authorpairs) from combinations( TABLE(select clean(authorlist) from (select * from artifact_authorlists where jsoncount(authorlist)<=50) zz),2);",
+        "difficulty": "CHALLENGING",
+        "avg_score": 2.67,
+        "justifications": [
+            "The question requires understanding how to extract and pair authors from lists, which takes some thought. The knowledge reasoning is high (3) because it heavily relies on several specific UDFs (jsoncount, clean, combinations, aggregate_count) not found in standard SQL. The data complexity is also high (3) due to the presence of JSON arrays representing author lists stored within a single column. Finally, the SQL complexity is high (3) as it involves deeply nested subqueries, table functions, and multiple specialized functions to achieve the result.",
+            "The question requires some thought to deduce that generating 'author pairs' implies calculating combinations of size 2. Knowledge reasoning is high because the query relies on multiple domain-specific UDFs (aggregate_count, combinations, clean, jsoncount) without explicit evidence provided. Data complexity is elevated due to the presence of JSON arrays ('authorlist') that must be counted and parsed. SQL complexity is high due to deep nesting, the use of table functions, and multiple specialized function calls.",
+            "The question is relatively straightforward but requires understanding of generating combinations from lists. Knowledge reasoning is high (3) due to the extensive reliance on specific UDFs (aggregate_count, combinations, clean, jsoncount) that go well beyond standard SQL. Data complexity is high (3) as the 'authorlist' column contains JSON arrays that require parsing, cleaning, and transformation. SQL complexity is high (3) due to the deeply nested subqueries, table-generating functions, and multiple UDFs used together."
+        ]
+    },
+    {
+        "question_id": 10,
+        "db_id": "test",
+        "question": "test",
+        "evidence": "test",
+        "SQL": "test",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.0,
+        "justifications": [
+            "The provided question, evidence, target SQL, and database schema are all empty or placeholder ('test') values. Consequently, there is no structural, logical, or data-driven complexity to evaluate, resulting in the lowest possible score across all criteria.",
+            "The provided example is a placeholder test with 'test' for the question, evidence, and SQL, and no database schema is provided. Therefore, all complexity metrics are rated at the lowest possible score.",
+            "The question, evidence, and target SQL are all simple 'test' placeholders. There is no actual database schema provided, and no real SQL operations, data structures, or external knowledge are involved, resulting in the lowest possible score for all categories."
+        ]
+    },
+    {
+        "question_id": 11,
+        "db_id": "test",
+        "question": "test",
+        "evidence": "test",
+        "SQL": "test",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.0,
+        "justifications": [
+            "The provided question, evidence, and target SQL are all dummy 'test' strings, and no database schema was provided. Therefore, all metrics represent the lowest possible complexity.",
+            "The provided example consists entirely of placeholder 'test' strings for the question, evidence, and SQL, with no database schema provided. Since there is no actual database logic, reasoning, or query structure to evaluate, it represents the lowest possible complexity across all categories.",
+            "The provided question, evidence, target SQL, and database schema are all dummy placeholders ('test' or empty). Because there is no actual logical ambiguity, external knowledge requirement, schema complexity, or SQL syntax to evaluate, all metrics default to the lowest score of 1."
+        ]
+    },
+    {
+        "question_id": 12,
+        "db_id": "udfbench",
+        "question": "What are the top 10 artifact IDs with the highest noisy view counts over the last 24 months?",
+        "evidence": "No evidence",
+        "SQL": "select artifactid, addnoise(COUNT(*)) AS views fROM views_stats WHERE TO_TIMESTAMP(cleandate(date), 'yyyy/MM/dd') >= (CURRENT_TIMESTAMP - INTERVAL 24 MONTH) group by artifactid ORDER BY views desc LIMIT 10;",
+        "difficulty": "MODERATE",
+        "avg_score": 1.75,
+        "justifications": [
+            "The question is straightforward and explicitly states the required fields and conditions (Q Understanding = 1). The query relies on user-defined functions like 'addnoise' and 'cleandate' to handle specific logic without external evidence (K Reasoning = 2). The data involves complex or messy date strings that require custom cleaning and timestamp conversion (Data Complexity = 2). The SQL involves multiple functions, date interval arithmetic, grouping, and ordering, but does not use any joins or subqueries (SQL Complexity = 2).",
+            "The question is clear and straightforward. Knowledge reasoning requires using UDFs like 'addnoise' and 'cleandate' to handle domain-specific logic. Data complexity is moderate because the date values are unclean and require specific formatting before comparison. The SQL is moderately complex, involving multiple nested functions, interval arithmetic, aggregation, grouping, and ordering.",
+            "The question is straightforward and clearly states the requirements. Knowledge reasoning requires the use of UDFs (addnoise and cleandate) to handle specific domain logic, earning a 2. Data complexity is moderate (2) because the date column values require cleaning and formatting before they can be evaluated as timestamps. SQL complexity is a 2 as it involves several functions, interval arithmetic, grouping, and ordering, but lacks highly complex structures like multiple nested subqueries or window functions."
+        ]
+    },
+    {
+        "question_id": 13,
+        "db_id": "udfbench",
+        "question": "Retrieve the publication DOIs and their corresponding project IDs extracted from the funding information in the Crossref dataset.",
+        "evidence": "No evidence",
+        "SQL": "SELECT publicationdoi, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from jsonparse (TABLE(select column1 from file_q13('crossref.txt','text')) ,'publicationdoi','fundinginfo' ) ) AS T ) AS crossref ;",
+        "difficulty": "MODERATE",
+        "avg_score": 2.5,
+        "justifications": [
+            "The question is straightforward to understand (score 1) as it clearly states the desired output. However, the knowledge reasoning is highly complex (score 3) because it requires knowing specific User-Defined Functions (UDFs) like 'extractprojectid', 'jsonparse', and 'file_q13' without any provided evidence. The data complexity is high (score 3) as the schema involves reading from a raw text file ('crossref.txt') and parsing nested JSON funding information instead of querying standard relational tables. Finally, the SQL complexity is high (score 3) due to multiple nested subqueries, table functions, and specific UDFs to extract the required data.",
+            "The question is straightforward and clearly states the required outputs. However, knowledge reasoning is high (3) because it heavily relies on specialized UDFs (extractprojectid, jsonparse, file_q13) to process the data. Data complexity is also high (3) as the query involves reading unstructured text files and parsing JSON data rather than querying a simple relational schema. SQL complexity is high (3) due to the deeply nested subqueries and the integration of multiple custom functions.",
+            "The question is straightforward and clearly states the desired output. However, it requires extensive knowledge reasoning since no evidence is provided, yet the target SQL relies heavily on custom UDFs like extractprojectid, jsonparse, and file_q13. The data complexity is high because it involves parsing unstructured text or JSON data from a file rather than querying standard relational tables. Finally, the SQL complexity is high due to the use of multiple nested subqueries, table-valued functions, and specialized extraction functions."
+        ]
+    },
+    {
+        "question_id": 14,
+        "db_id": "udfbench",
+        "question": "Find the author ID and affiliation of first authors from their most recent publication, provided that the publication is associated with a project funded by the European Commission.",
+        "evidence": "No evidence",
+        "SQL": "with aa (artifactid, authorid, affiliation, rank, authoridvalue, affiliationvalue ) as ( select artifactid, authorid, affiliation, rank, jsonparse_q14(authorid, 'value') as authoridvalue, jsonparse_q14(affiliation, 'value') as affiliationvalue from artifact_authors where affiliation is not null and affiliation <> '[]' and authorid is not null and authorid <> '[]' ) select aa.authoridvalue, aa.affiliationvalue from aa, artifacts a, projects_artifacts pr, projects p where aa.rank = 1 and aa.artifactid = a.id and p.id = pr.projectid and pr.artifactid = a.id and p.funder = 'European Commission' and (aa.authorid, cleandate(a.date)) in (select authorid, aggregate_max(cleandate(a.date)) as max_date from artifact_authors as aa, artifacts as a where aa.rank = 1 and aa.artifactid = a.id group by authorid);",
+        "difficulty": "CHALLENGING",
+        "avg_score": 2.75,
+        "justifications": [
+            "The question requires interpreting 'first authors' as rank = 1 and 'most recent publication' as the maximum date per author. Knowledge reasoning is extensive (score 3) because the query relies on unmentioned UDFs (jsonparse_q14, cleandate, aggregate_max) to handle complex column formats. Data complexity is high (score 3) due to JSON array strings in columns and a multi-table schema involving projects and artifacts. The SQL complexity is highly complex (score 3) as it uses a CTE, multiple joins, custom UDFs, and a subquery with tuple matching and grouping to find the maximum date.",
+            "The question requires translating 'first authors' to a rank condition and 'most recent' to a max date calculation, requiring some thought. Knowledge reasoning is extensive due to the necessary application of multiple UDFs (jsonparse_q14, cleandate, aggregate_max). Data complexity is high because author IDs and affiliations are stored as JSON arrays that must be parsed. SQL complexity is also high, utilizing a CTE, a 4-table join, multiple custom functions, and a multi-column IN subquery.",
+            "The question requires some thought to decompose the conditions into logical steps (first authors, most recent publication, and European Commission funding). Knowledge reasoning is rated 3 due to the extensive reliance on specific UDFs (jsonparse_q14, cleandate, aggregate_max) to handle the logic, despite no explicit evidence provided. Data complexity is high (3) because the schema contains complex JSON values (e.g., checking for '[]' and parsing) and requires navigating multiple links between authors, artifacts, and projects. SQL complexity is a 3 as it involves CTEs, multiple table joins, custom UDFs, and a complex tuple-based IN subquery with grouping and aggregation."
+        ]
+    },
+    {
+        "question_id": 15,
+        "db_id": "udfbench",
+        "question": "Find the artifact IDs and their corresponding project IDs extracted from Crossref funding information where the project ID is not already linked to the artifact in the projects database.",
+        "evidence": "No evidence",
+        "SQL": "SELECT artifacts.id, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from extractkeys (TABLE(select * from xmlparser (TABLE(select column1 from file_q13('crossref.xml','text')),'publication') ),'publicationdoi','fundinginfo' ) ) xx ) AS crossref, artifacts WHERE publicationdoi =artifacts.id AND crossref.projectid NOT IN ( SELECT extractcode(fundingstring) as projectid FROM projects_artifacts, projects WHERE projects_artifacts.artifactid = artifacts.id and projects.id = projects_artifacts.projectid ) ;",
+        "difficulty": "CHALLENGING",
+        "avg_score": 2.75,
+        "justifications": [
+            "The question requires some thought to interpret domain concepts. Knowledge reasoning is extensive as the query heavily relies on multiple undocumented UDFs (file_q13, xmlparser, extractkeys, extractprojectid, extractcode) to process external XML data. Data complexity is high due to the integration of relational tables with extracted XML structures. The SQL query is highly complex, involving deeply nested subqueries, table functions, multiple UDFs, and a NOT IN subquery.",
+            "The question requires some thought to understand the mapping between unstructured Crossref data and the structured projects database. The knowledge reasoning is high (3) because it heavily relies on complex UDFs (file_q13, xmlparser, extractkeys, extractprojectid, extractcode) to process the data. Data complexity is high (3) due to the presence of XML structures and nested strings that must be parsed on the fly. The SQL complexity is high (3) given the deep nesting, use of TABLE() functions, and a complex NOT IN subquery with multiple joins.",
+            "Question understanding requires some thought to map the concepts of 'Crossref funding information' and 'not already linked'. Knowledge reasoning is extremely high (3) because the query relies on multiple undocumented UDFs (file_q13, xmlparser, extractkeys, extractprojectid, extractcode) to extract data from an XML file without any external evidence provided. Data complexity is high (3) due to the use of unstructured XML data ('crossref.xml') and complex string extraction. SQL complexity is highly complex (3) as it involves deeply nested subqueries, table-valued functions, multiple UDFs, joins, and a NOT IN subquery."
+        ]
+    },
+    {
+        "question_id": 16,
+        "db_id": "udfbench",
+        "question": "For each project (identified by its funder, funding class, and project ID), count the number of joint publications produced by its co-author pairs before, during, and after the project's duration, considering only publications with fewer than 7 authors.",
+        "evidence": "No evidence",
+        "SQL": "WITH pairs(pubid, pubdate, projectstart, projectend, funder, class, projectid, authorpair) as ( SELECT pubid, pubdate, projectstart, projectend, funder, fclass as class, projectid, authorpair FROM combinations_q16(TABLE( SELECT pubid, pubdate, projectstart, projectend,funder,class,projectid, authorlist FROM ( select artifact_authorlists.artifactid as pubid, artifacts.date as pubdate, projects.startdate as projectstart, projects.enddate as projectend, extractfunder(projects.fundingstring) AS funder, extractclass(projects.fundingstring) AS class, extractid(projects.fundingstring) AS projectid, jsort(jsortvalues(removeshortterms(lowerize(artifact_authorlists.authorlist)))) as authorlist from projects, projects_artifacts, artifacts,artifact_authorlists where projects.id = projects_artifacts.projectid and projects_artifacts.artifactid = artifact_authorlists.artifactid and projects_artifacts.artifactid=artifacts.id and jsoncount(authorlist)<7 ) x ),2) AS xx ) SELECT funder, class, projectid, SUM(CASE WHEN cleandate(pubdate) between pstartcleaned and pendcleaned THEN 1 ELSE NULL END) AS authors_during, SUM(CASE WHEN cleandate(pubdate) < pstartcleaned THEN 1 ELSE NULL END) AS authors_before, SUM(CASE WHEN cleandate(pubdate) > pendcleaned THEN 1 ELSE NULL END) AS authors_after FROM ( SELECT projectpairs.funder, projectpairs.class, projectpairs.projectid, cleandate(projectpairs.projectstart) AS pstartcleaned, cleandate(projectpairs.projectend) AS pendcleaned, pairs.authorpair, pairs.pubdate FROM ( SELECT * FROM pairs WHERE projectid IS NOT NULL ) AS projectpairs, pairs WHERE projectpairs.authorpair = pairs.authorpair ) AS xx GROUP BY funder, class, projectid;",
+        "difficulty": "CHALLENGING",
+        "avg_score": 2.83,
+        "justifications": [
+            "The question requires careful thought to translate the concepts of co-author pairs and specific temporal constraints (before, during, after) into SQL logic. Extensive external knowledge and UDFs are necessary, as the query relies heavily on custom functions like combinations_q16, extractfunder, extractclass, extractid, jsort, jsoncount, and cleandate to process the data. Data complexity is high due to the presence of JSON arrays (authorlist) and dirty string formats (fundingstring, dates) that require significant cleaning and extraction. The SQL query is highly complex, utilizing nested subqueries, CTEs, table-valued functions, self-joins, and multiple conditional aggregations.",
+            "The question is highly complex, requiring careful thought to understand how to map projects to their co-author pairs and track their joint publications across different timeframes. Knowledge reasoning is extensive (3) due to the heavy reliance on multiple UDFs (e.g., extractfunder, cleandate, combinations_q16, jsoncount) to extract and manipulate attributes. Data complexity is high (3) because the query deals with unstructured strings (funding strings), messy date formats, and JSON arrays (author lists). SQL complexity is high (3) due to the use of deeply nested subqueries, CTEs, table-valued functions, multiple joins, and conditional aggregations.",
+            "The question requires careful thought to grasp the logic of tracking co-author pairs from specific projects across three distinct time frames (before, during, and after). Knowledge reasoning is rated 3 due to the extensive reliance on highly specific UDFs (e.g., combinations_q16, extractfunder, cleandate, jsort, jsoncount) to extract and manipulate data. Data complexity is also 3, as the data contains complex values like funding strings and JSON author lists that require specific parsing. Finally, SQL complexity is 3 due to the use of advanced SQL constructs, including deep nested subqueries, CTEs with table functions, self-joins, and complex conditional aggregations."
+        ]
+    },
+    {
+        "question_id": 17,
+        "db_id": "test",
+        "question": "test",
+        "evidence": "test",
+        "SQL": "test",
+        "difficulty": "SIMPLE",
+        "avg_score": 1.0,
+        "justifications": [
+            "The provided example consists entirely of placeholder text ('test') for the question, evidence, and SQL, with no database schema provided. Since there is no actual logic, reasoning, data, or SQL syntax to evaluate, all complexity metrics default to the lowest score.",
+            "The provided question, evidence, and target SQL are all simple placeholder 'test' strings with an empty database schema. As there is no actual logic, reasoning, or complex data structure to evaluate, all complexity metrics are rated at the lowest possible level.",
+            "The provided question, evidence, and target SQL are all merely placeholder 'test' strings, and no database schema is provided. Therefore, all metrics evaluate to the lowest possible complexity score."
+        ]
+    },
+    {
+        "question_id": 18,
+        "db_id": "udfbench",
+        "question": "For each arXiv article, find the top 5 PubMed articles with the highest Jaccard similarity, calculated using the top 10% most frequent stemmed keywords from their abstracts after removing stopwords.",
+        "evidence": "No evidence",
+        "SQL": "SELECT * FROM ( select group_column1 as arxivid, group_column2 as pubmedid, top_s from aggregate_top (TABLE(SELECT arxivid, pubmedid, JACCARD(arxivterms, pmcterms) AS similarity FROM (SELECT arxivid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS arxivterms FROM (select column1 as arxivid, column2 as abstract from file_q18('arxiv.csv', 'csv') ) xx ) xxx, (SELECT pubmedid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS pmcterms FROM (select column1 as pubmedid, column2 as abstract from file_q18('pubmed.txt', 'json')) zz )zzz),5,'arxivid','pubmedid','similarity') xxzz ) ;",
+        "difficulty": "CHALLENGING",
+        "avg_score": 2.75,
+        "justifications": [
+            "Question Understanding: The question is explicit but requires careful step-by-step translation of a complex text processing pipeline (stopwords, stemming, frequency, Jaccard similarity) into SQL operations. Knowledge Reasoning: Extensive external UDF logic is needed, including JACCARD, JPACK, FREQUENTTERMS, STEM, FILTERSTOPWORDS, KEYWORDS, and aggregate_top. Data Complexity: The query directly processes raw text data (abstracts) loaded on-the-fly from external file sources (CSV and JSON), representing highly complex values and data retrieval. SQL Complexity: The SQL is highly complex, featuring deep subquery nesting, inline views, table functions, and a chain of advanced UDFs.",
+            "The question requires careful thought to decompose a multi-step natural language processing pipeline. Extensive external UDFs are required to handle text extraction, stemming, stopword removal, and Jaccard similarity. The data is read dynamically from external CSV and JSON files with complex structures. The SQL query is highly complex, featuring deep nesting, composed UDFs, and table-valued functions.",
+            "The question is explicit about the text processing steps but requires careful thought to translate into a sequence of SQL operations. It requires extensive UDF logic to implement domain-specific operations such as keyword extraction, stopword filtering, stemming, term frequency, packing, Jaccard similarity, and top-k aggregation. Data complexity is high, as the query processes unstructured text by directly querying external CSV and JSON files. The SQL is highly complex, featuring deeply nested subqueries, cross joins, highly nested UDFs, and table-valued functions."
+        ]
+    }
+]

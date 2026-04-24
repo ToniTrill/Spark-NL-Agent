@@ -70,6 +70,8 @@ class SubmitSparkSQLTool(BaseSparkSQLTool, BaseTool):
     MANDATORY: This is the ONLY tool to submit your final answer. 
     Use it ONLY when you have verified your query and are 100% certain it is correct.
     Calling this tool ends the session and sends the query for final evaluation.
+    """
+    """
     If you have any doubt about the data or column names, use 'investigate_sql_db' or 'schema_sql_db' first.
     Input must be a complete and valid Spark SQL query.
     """
@@ -134,7 +136,7 @@ class QueryCheckerTool(BaseSparkSQLTool, BaseTool):
     args_schema: type[BaseModel] = QueryCheckerInput
     description: str = """
     Use this tool to double check if your query is correct before executing it.
-    Always use this tool before executing a query with query_sql_db!
+    Always use this tool before executing a query with submit_final_query
     """
 
     @model_validator(mode="before")
@@ -222,59 +224,85 @@ class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
 
         return output
 
-"""
-    except Exception as e:
-        return f"Error processing UDF catalog: {str(e)}"
-        output = "AVAILABLE SPARK SQL UDFs (Use lowercase names):\n\n"
-        output += " @udtf(returnType=\"column1 STRING, column2 STRING,column3 STRING\") class File_q7: def eval(self, file_path: str, file_type:str):"
-        output += "# U41.	File: parses an external file (csv, xml, json) and returns a table def file(file_path: str, file_type:str): "
-        output += "@udtf(returnType=\"publicationdoi string, fundinginfo string\") class JsonParse: def eval(self, json_content: list, key1: str, key2: str):"
-        output += "@udtf(returnType=\"record string\") class Xmlparser: def eval(self, xml_content: list, root_name: str):"
-        output += "def eval(self, rows: Row, top_n: int, group_col: str,group_col2:str, value_col: str): @udtf(returnType=\"group_column1: string, group_column2: string, top_s: double\") class AggregateTop:"
-        output += "@udtf(returnType=\"pubid string, pubdate string, projectstart string, projectend string, funder string, fclass string, projectid string,authorpair string\") class Combinations_q16: def eval(self, vals: Row, N:int):"
-        output += "@udtf(returnType=\"publicationdoi string, fundinginfo string\") class Extractkeys: def eval(self,jvals:list,key1:str,key2:str):"
-        output += "@udtf(returnType=\"column1 STRING, column2 STRING,column3 STRING\") class File_q7: def eval(self, file_path: str, file_type:str):"
-        output += "# U41.	File: parses an external file (csv, xml, json) and returns a table  def file(file_path: str, file_type:str):    "
-
-        output += "@pandas_udf(\"double\") def aggregate_median(values: pd.Series) -> float:" 
-        output += "@pandas_udf(\"string\") def aggregate_max(values: pd.Series) -> float:"
-        output += "@pandas_udf(\"long\") def aggregate_count(values: pd.Series) -> int:"
-        output += "@pandas_udf(\"double\") def aggregate_avg(values: pd.Series) -> float:"
-
-        output += "# U1. Add_noise : adds gaussian noise to a value and returns a float def addnoise(val:int)->float:"
-        output += "# U2.	Clean: Performs a simple data cleaning task on the string tokens of a json list def clean(val: str)->str:"
-        output += " # U3.	Cleandate: Reads a date and converts it to a common format if it is not, handles also dirty dates def cleandate(pubdate: str)->str:"
-        output += " # U4.	Converttoeuro: : Converts currency to euro, returns a float def converttoeuro(x:float,y:str)->float:"
-        output += "# U5.	Extractclass: extracts class from string with format funder::class::projectid  def extractclass(project:str)->str:"
         
-        output += "# U6.	Extractcode: Processes a structured string containing the funder’s id, the funding class and the project id, and extracts the project id def extractcode(project: str)->str:"
-        output += "# U7.	Extractday: Reads a date (as a string) and extracts an integer with the day def extractday(arg: str) -> int:"
-        output += "# U8.	Extractfunder: extracts funder from string with format funder::class::projectid def extractfunder(project:str)->str:"
-        output += "def extractid(project:str)->str:"
-        output += "# U10. Extractmonth: Reads a date (as a string) and extracts an integer with the month def extractmonth(arg: str) -> int:"
+class GetUDFCodeTool(BaseSparkSQLTool, BaseTool):
+    name: str = "get_udf_source_code"
+    args_schema: type[BaseModel] = QuerySparkSQLInput
+    description: str = "Retrieves the source code of a specified User Defined Function (UDF) registered in the Spark session. Input should be the name of the UDF."
 
-        output += "# U11.	Extractprojectid: Processes a text snippet and extracts a 6 digit project identifier  def extractprojectid(input: str)->str:"
-        output += "# U12.  Extractyear : Reads a date (as a string) and extracts an integer with the year def extractyear(arg: str) -> int:"
-        output += "# U13.	Filterstopwords: It processes an input text and returns it after removing the stopwords, using a list of stopwords _stopwords=set([r\".\", r\"_\", r\"stessi\", r\"można\", r\"einseitiger\", r\"wären\", r\"fÛr\", r\"olette\","
-        output += "# U14.	Frequentterms: Returns a space separated text containing the most N\% frequent tokens def frequentterms(input:str,N:int)->str:"
-        output += "# U15.	Jaccard: Processes two json lists with tokens and calculated the jaccard distance def jaccard(arg1:str,arg2:str)->float:"
+    def _run(self, udf_name: str, run_manager: Optional[any] = None) -> str:
+        base_path = "db/udfbench/engines/pyspark/udfs"
+        categories = ["scalar", "aggregate", "table"]
+        
+        udf_name_clean = udf_name.lower()
+        found_path = None
 
-        output += "# U16.	Jpack: Converts a string to a json list with tokens def jpack(input:str)->str:"
-        output += "# U17.	Jsoncount: Returns the length of a json list def jsoncount(jval: str) -> int:"
-        output += "# U18.	Jsonparse: Parses a json dict per time and returns a string with the value def jsonparse(json_content: str,key1: str)->str:"
-        output += "# U19.	Jsort: processes a json list and returns a sorted json list  def jsort(jval:str)->str:"
-        output += "# U20.	Jsortvalues: processes a json list where each value contains more than one tokens, sorts the tokens in each value  def jsortvalues(jval:str)->str:"
+        possible_filenames = [
+            f"{udf_name_clean}.py",
+            f"aggregate_{udf_name_clean}.py",
+            f"file_{udf_name_clean}.py"
+        ]
 
-        output += "# U21.	Keywords: Removes any punctuation from text and returns the keywords in one string  def keywords(input:str)->str:"
-        output += "# U22.	Log_10: Calculates and returns the logarithm def log_10(x:float)->float:"
-        output += "# U23. Lowerize: Converts to lower case the input text def lowerize(val: str)->str:"
-        output += "# U24.	Removeshortterms:  processes a json list where each value contains more than one tokens and removes tokens with length less than 3 chars  def removeshortterms(jval:str)->str:"
-        output += "# U25.	Stem: Stems the input text using Porter2 stemming algorithm. def stem(input:str)->str:"
-        return output"""
-""""
+        for category in categories:
+            category_dir = os.path.join(base_path, category)
+            if not os.path.isdir(category_dir):
+                continue
+                
+            for fname in possible_filenames:
+                p = os.path.join(category_dir, fname)
+                if os.path.exists(p):
+                    found_path = p
+                    break
+            
+            if found_path: break
 
-    return output
-"""
+            for file in os.listdir(category_dir):
+                if udf_name_clean in file.lower() and file.endswith(".py"):
+                    found_path = os.path.join(category_dir, file)
+                    break
+            
+            if found_path: break
+
+        if found_path:
+            try:
+                with open(found_path, "r", encoding="utf-8") as f:
+                    code = f.read()
+                return f"Source code found in '{found_path}':\n\n```python\n{code}\n```"
+            except Exception as e:
+                return f"Error reading file {found_path}: {str(e)}"
+        
+        return f"UDF source code for '{udf_name}' not found in categories {categories}."
+            
+class ReadFileTool(BaseSparkSQLTool, BaseTool):
+    name: str = "read_file"
+    args_schema: type[BaseModel] = QuerySparkSQLInput
+    description: str = "Reads the content of a specified file from the local filesystem. Input should be the relative path to the file."
+
+    def _run(self, path: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        try:
+            if not os.path.exists(path):
+                return f"Error: File at {path} not found."
+            
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read(2000) 
+                return f"Content of {path} (first 2000 chars):\n\n{content}"
+        except Exception as e:
+            return f"Error reading file: {str(e)}"
+        
+class UDFCanaryTool(BaseSparkSQLTool, BaseTool):
+    name: str = "udf_canary"
+    args_schema: type[BaseModel] = QuerySparkSQLInput
+    description: str = "Executes a UDF with a single sample value to see the output. Use this to verify how a UDF behaves before writing the full SQL."
+
+    def _run(self, udf_name: str, sample_input: str) -> str:
+        try:
+            result = self.db.spark.sql(f"SELECT {udf_name}('{sample_input}')").collect()
+            return f"Test result for {udf_name}('{sample_input}'): {result[0][0]}"
+        except Exception as e:
+            return f"Canary test failed: {str(e)}"
+        
+
+
 class InvestigateSparkSQLTool(BaseSparkSQLTool, BaseTool):
     name: str = "investigate_sql_db"
     args_schema: type[BaseModel] = QuerySparkSQLInput
