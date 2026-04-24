@@ -183,9 +183,9 @@ class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
     def _run(self, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         catalog_path = "db/udfbench/udf_catalog_v2.json"
         if not os.path.exists(catalog_path):
-            return "ERROR: UDF catalog not found. Run the generator script first."
+            return "ERROR: UDF catalog not found."
 
-        with open(catalog_path, "r") as f:
+        with open(catalog_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             udfs = data.get("udfs", [])
         print(f"\n[DEBUG] Carregades {len(udfs)} UDFs del catàleg.")
@@ -201,14 +201,14 @@ class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
         for u in udfs:
             name = u['name'].lower()
             category = u.get('category', 'scalar').lower()
+
             if u['category'] == 'aggregate' and not name.startswith('aggregate_'):
                 name = f"aggregate_{name}"
             
-            line = f"- {name}: {u['description']} (In: {u['input_type']}, Out: {u['output_type']})"
             if category in sections:
-                sections[category].append(line)
+                sections[category].append(f"- {name}")
             else:
-                sections["scalar"].append(line)
+                sections["scalar"].append(f"- {name}")
            
         output = "AVAILABLE SPARK SQL UDFs (Use lowercase names):\n"
 
