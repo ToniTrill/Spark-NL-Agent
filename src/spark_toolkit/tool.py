@@ -63,6 +63,13 @@ class UDFNameInput(BaseModel):
     )
     model_config = ConfigDict(extra="forbid")
 
+class ReadFileInput(BaseModel):
+    path: str = Field(
+        ...,
+        description="The relative path to the file to read (e.g., 'arxiv.csv').",
+    )
+    model_config = ConfigDict(extra="forbid")
+
 class EmptyInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -109,8 +116,24 @@ class InfoSparkSQLTool(BaseSparkSQLTool, BaseTool):
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Get the schema for tables in a comma-separated list."""
-        return self.db.get_table_info_no_throw(table_names.split(", "))
+        schema_info = self.db.get_table_info_no_throw(table_names.split(", "))
+        external_files_context = """
+        --- EXTERNAL DATA FILES (FILESYSTEM) ---
+        Some UDFs (like file_q7, file_q13, file_q18) require direct file access. 
+        The actual raw data for specific sources is stored here:
+        - 'arxiv.csv' (Source for arXiv queries)
+        - 'crossref.txt' (Source for Crossref queries)
+        - 'pubmed_q7.txt' (Source for PubMed queries)
+        - 'crossref.xml' (XML version for Crossref)
 
+        ⚠️ IMPORTANT: The standard SQL tables above (like 'artifacts') might be EMPTY. 
+        If the question mentions arXiv, PubMed, or Crossref, you MUST:
+        1. Identify the file path above.
+        2. Use 'read_file' to see the column structure (e.g., column1, column2).
+        3. Use the corresponding 'file_' UDF in your SQL.
+        ---------------------------------------
+        """
+        return schema_info + external_files_context 
 
 class ListSparkSQLTool(BaseSparkSQLTool, BaseTool):
     """Tool for getting tables names."""
@@ -217,6 +240,7 @@ class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
                 sections["scalar"].append(f"- {name}")
            
         output = "AVAILABLE SPARK SQL UDFs (Use lowercase names):\n"
+        output += "CRITICAL: You only have names. Using these without 'get_udf_source_code' will likely cause SYNTAX ERRORS because you don't know if they are SCALAR or TABLE functions.\n\n"
 
         output += "### 1. SCALAR FUNCTIONS (Use in SELECT or WHERE clauses):\n"
         output += ("\n".join(sections["scalar"]) if sections["scalar"] else "None available" + "\n\n")
@@ -227,8 +251,8 @@ class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
         output += "### 3. TABLE FUNCTIONS (UDTFs) (MANDATORY: Use ONLY in FROM clause with TABLE syntax):\n"
         output += "Syntax: SELECT ... FROM function_name(TABLE(SELECT ...), args)\n"
         output += ("\n".join(sections["table"] if sections["table"] else "None available" ))
-
-        output += "\nREMINDER: For any UDF name you found in the previous step that seems relevant, you MUST call `get_udf_source_code´"
+        output += "\nCRITICAL ACTION REQUIRED: You MUST call `get_udf_source_code` for the UDFs you need. "
+        output += "If you skip this step, you will likely use the wrong syntax for Table Functions or miss external file dependencies."
 
         return output
 
@@ -275,15 +299,25 @@ class GetUDFCodeTool(BaseSparkSQLTool, BaseTool):
             try:
                 with open(found_path, "r", encoding="utf-8") as f:
                     code = f.read()
-                return f"Source code found for '{udf_name}':\n\n```python\n{code}\n```"
+                response = f"Source code found for '{udf_name}':\n\n```python\n{code}\n```"
+
+                if "file_" in udf_name_clean:
+                    response += "\n\n" + "!"*40
+                    response += "\n🔴 MANDATORY AGENT ACTION DETECTED:"
+                    response += f"\nThe UDF '{udf_name}' is a FILE-PROCESSOR."
+                    response += "\nStep A: Find the file path in the code above (e.g., 'arxiv.csv')."
+                    response += "\nStep B: Call `read_file_schema_discovery(path='...')` IMMEDIATELY."
+                    response += "\nYou cannot write the SQL query until you know the column names inside that file."
+                    response += "\n" + "!"*40
+                return response 
             except Exception as e:
                 return f"Error reading file {found_path}: {str(e)}"
         
         return f"NOT FOUND: The UDF '{udf_name}' was not found in the custom library. Check the name with list_udf_sql_db."
             
 class ReadFileTool(BaseSparkSQLTool, BaseTool):
-    name: str = "read_file"
-    args_schema: type[BaseModel] = QuerySparkSQLInput
+    name: str = "read_file_schema_discovery"
+    args_schema: type[BaseModel] = ReadFileInput
     description: str = "Reads the content of a specified file from the local filesystem. Input should be the relative path to the file."
 
     def _run(self, path: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:

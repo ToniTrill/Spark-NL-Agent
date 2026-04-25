@@ -1,0 +1,77 @@
+[
+    {
+        "question_id": 15,
+        "difficulty": "CHALLENGING",
+        "question": "Find the artifact IDs and their corresponding project IDs extracted from Crossref funding information where the project ID is not already linked to the artifact in the projects database.",
+        "gold_sql": "SELECT artifacts.id, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from extractkeys (TABLE(select * from xmlparser (TABLE(select column1 from file_q13('crossref.xml','text')),'publication') ),'publicationdoi','fundinginfo' ) ) xx ) AS crossref, artifacts WHERE publicationdoi =artifacts.id AND crossref.projectid NOT IN ( SELECT extractcode(fundingstring) as projectid FROM projects_artifacts, projects WHERE projects_artifacts.artifactid = artifacts.id and projects.id = projects_artifacts.projectid ) ;",
+        "predicted_sql": "SELECT a.artifact_id, a.extracted_project_id FROM (SELECT id AS artifact_id, extractprojectid(title) AS extracted_project_id FROM artifacts WHERE extractprojectid(title) IS NOT NULL) AS a LEFT JOIN projects_artifacts AS pa ON a.artifact_id = pa.artifactid AND a.extracted_project_id = pa.projectid WHERE pa.projectid IS NULL;",
+        "gold_udfs": [
+            "file_q13",
+            "extractcode",
+            "xmlparser",
+            "in",
+            "extractkeys",
+            "extractprojectid"
+        ],
+        "predicted_udfs": [
+            "extractprojectid"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 5876,
+            "output": 2550
+        }
+    },
+    {
+        "question_id": 16,
+        "difficulty": "CHALLENGING",
+        "question": "For each project (identified by its funder, funding class, and project ID), count the number of joint publications produced by its co-author pairs before, during, and after the project's duration, considering only publications with fewer than 7 authors.",
+        "gold_sql": "WITH pairs(pubid, pubdate, projectstart, projectend, funder, class, projectid, authorpair) as ( SELECT pubid, pubdate, projectstart, projectend, funder, fclass as class, projectid, authorpair FROM combinations_q16(TABLE( SELECT pubid, pubdate, projectstart, projectend,funder,class,projectid, authorlist FROM ( select artifact_authorlists.artifactid as pubid, artifacts.date as pubdate, projects.startdate as projectstart, projects.enddate as projectend, extractfunder(projects.fundingstring) AS funder, extractclass(projects.fundingstring) AS class, extractid(projects.fundingstring) AS projectid, jsort(jsortvalues(removeshortterms(lowerize(artifact_authorlists.authorlist)))) as authorlist from projects, projects_artifacts, artifacts,artifact_authorlists where projects.id = projects_artifacts.projectid and projects_artifacts.artifactid = artifact_authorlists.artifactid and projects_artifacts.artifactid=artifacts.id and jsoncount(authorlist)<7 ) x ),2) AS xx ) SELECT funder, class, projectid, SUM(CASE WHEN cleandate(pubdate) between pstartcleaned and pendcleaned THEN 1 ELSE NULL END) AS authors_during, SUM(CASE WHEN cleandate(pubdate) < pstartcleaned THEN 1 ELSE NULL END) AS authors_before, SUM(CASE WHEN cleandate(pubdate) > pendcleaned THEN 1 ELSE NULL END) AS authors_after FROM ( SELECT projectpairs.funder, projectpairs.class, projectpairs.projectid, cleandate(projectpairs.projectstart) AS pstartcleaned, cleandate(projectpairs.projectend) AS pendcleaned, pairs.authorpair, pairs.pubdate FROM ( SELECT * FROM pairs WHERE projectid IS NOT NULL ) AS projectpairs, pairs WHERE projectpairs.authorpair = pairs.authorpair ) AS xx GROUP BY funder, class, projectid;",
+        "predicted_sql": "\nWITH DistinctArtifactsPerPeriod AS (\n    SELECT\n        p.funder,\n        p.funding_lvl0,\n        p.id AS project_id,\n        CASE\n            WHEN cleandate(a.date) < cleandate(p.startdate) THEN 'before'\n            WHEN cleandate(a.date) >= cleandate(p.startdate) AND cleandate(a.date) <= cleandate(p.enddate) THEN 'during'\n            WHEN cleandate(a.date) > cleandate(p.enddate) THEN 'after'\n            ELSE 'unknown'\n        END AS publication_period,\n        a.id AS artifact_id\n    FROM\n        projects AS p\n    JOIN\n        projects_artifacts AS pa ON p.id = pa.projectid\n    JOIN\n        artifacts AS a ON pa.artifactid = a.id\n    JOIN\n        artifact_authors AS aa1 ON a.id = aa1.artifactid\n    JOIN\n        artifact_authors AS aa2 ON a.id = aa2.artifactid\n    WHERE\n        a.authors < 7\n        AND aa1.authorid < aa2.authorid\n    GROUP BY\n        p.funder,\n        p.funding_lvl0,\n        p.id,\n        publication_period,\n        a.id\n)\nSELECT\n    dapp.funder,\n    dapp.funding_lvl0,\n    dapp.project_id,\n    dapp.publication_period,\n    aggregate_count(dapp.artifact_id) AS joint_publications_count\nFROM\n    DistinctArtifactsPerPeriod AS dapp\nGROUP BY\n    dapp.funder,\n    dapp.funding_lvl0,\n    dapp.project_id,\n    dapp.publication_period\nORDER BY\n    dapp.funder,\n    dapp.funding_lvl0,\n    dapp.project_id,\n    dapp.publication_period;\n",
+        "gold_udfs": [
+            "removeshortterms",
+            "cleandate",
+            "extractid",
+            "combinations_q16",
+            "pairs",
+            "lowerize",
+            "jsortvalues",
+            "extractfunder",
+            "jsort",
+            "jsoncount",
+            "extractclass"
+        ],
+        "predicted_udfs": [
+            "cleandate",
+            "aggregate_count"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 10234,
+            "output": 6719
+        }
+    },
+    {
+        "question_id": 18,
+        "difficulty": "CHALLENGING",
+        "question": "For each arXiv article, find the top 5 PubMed articles with the highest Jaccard similarity, calculated using the top 10% most frequent stemmed keywords from their abstracts after removing stopwords.",
+        "gold_sql": "SELECT * FROM ( select group_column1 as arxivid, group_column2 as pubmedid, top_s from aggregate_top (TABLE(SELECT arxivid, pubmedid, JACCARD(arxivterms, pmcterms) AS similarity FROM (SELECT arxivid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS arxivterms FROM (select column1 as arxivid, column2 as abstract from file_q18('arxiv.csv', 'csv') ) xx ) xxx, (SELECT pubmedid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS pmcterms FROM (select column1 as pubmedid, column2 as abstract from file_q18('pubmed.txt', 'json')) zz )zzz),5,'arxivid','pubmedid','similarity') xxzz ) ;",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "stem",
+            "frequentterms",
+            "jpack",
+            "filterstopwords",
+            "jaccard",
+            "aggregate_top",
+            "file_q18",
+            "keywords"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 28058,
+            "output": 66400
+        }
+    }
+]

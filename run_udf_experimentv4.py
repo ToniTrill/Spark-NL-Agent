@@ -48,8 +48,8 @@ from few_shot import load_vector
 from validation import validate
 
 
-# Configuration
-QUERY_INDICES = [ 1, 2, 3, 4, 7, 8, 12, 13, 14, 15, 16, 18 ]#num preguntes que testeijar , 8, 9, 12, 13, 14, 15, 16, 18  1, 2, 3, 4, 7, 8,    
+# Configuration 1, 2, 3, 4, 7, 8, 12, 13, 14, 15, 16, 18 
+QUERY_INDICES = [7, 13, 18]#num preguntes que testeijar , 8, 9, 12, 13, 14, 15, 16, 18  1, 2, 3, 4, 7, 8,    
 REPETITIONS = 1 #fer vaires repeticions i agafar la mitjana per fer estudis per variabilitat de la IA
 FAISS_PATH = "db/faiss_index_udv" #a on es guarda la cache faiss
 JSON_PATH='db/udfbench/udfdev_v2.json' #on estan les pregutnes i respostes de la db
@@ -159,6 +159,9 @@ def main():
                 },
             }
         results_log.append(log_entry)
+        with open(OUTPUT_RESULTS_PATH, "w", encoding="utf-8") as f:
+            json.dump(results_log, f, indent=4)
+        log_progress(f"Resultats parcials guardats al JSON per a Q{q_id}.")
         print(f"   UDFs Gold: {gold_udfs}")
         print(f"   UDFs Pred: {predicted_udfs}")
         print(f"   Correcte: {is_correct}")
@@ -172,8 +175,8 @@ def main():
     accuracy = (correct_count/len(test_questions)) * 100 if test_questions else 0
     print(f"Resultats de la itracio {accuracy} % d'encerts")
 
-    with open(OUTPUT_RESULTS_PATH, "w", encoding="utf-8") as f:
-        json.dump(results_log, f, indent=4)
+    #with open(OUTPUT_RESULTS_PATH, "w", encoding="utf-8") as f:
+    #    json.dump(results_log, f, indent=4)
     print(f"\n========================================")
     print(f"EXPERIMENT FINALITZAT")
     print(f"Accuracy Total: {accuracy:.2f}%")

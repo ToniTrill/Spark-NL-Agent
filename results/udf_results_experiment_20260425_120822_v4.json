@@ -1,0 +1,90 @@
+[
+    {
+        "question_id": 15,
+        "difficulty": "CHALLENGING",
+        "question": "Find the artifact IDs and their corresponding project IDs extracted from Crossref funding information where the project ID is not already linked to the artifact in the projects database.",
+        "gold_sql": "SELECT artifacts.id, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from extractkeys (TABLE(select * from xmlparser (TABLE(select column1 from file_q13('crossref.xml','text')),'publication') ),'publicationdoi','fundinginfo' ) ) xx ) AS crossref, artifacts WHERE publicationdoi =artifacts.id AND crossref.projectid NOT IN ( SELECT extractcode(fundingstring) as projectid FROM projects_artifacts, projects WHERE projects_artifacts.artifactid = artifacts.id and projects.id = projects_artifacts.projectid ) ;",
+        "predicted_sql": "\nWITH ExtractedProjects AS (\n    SELECT\n        id AS artifact_id,\n        extractprojectid(abstract) AS extracted_project_id\n    FROM\n        artifacts\n    WHERE\n        abstract IS NOT NULL AND abstract != ''\n)\nSELECT\n    ep.artifact_id,\n    ep.extracted_project_id\nFROM\n    ExtractedProjects AS ep\nLEFT JOIN\n    projects_artifacts AS pa ON ep.artifact_id = pa.artifactid AND ep.extracted_project_id = pa.projectid\nWHERE\n    ep.extracted_project_id IS NOT NULL AND ep.extracted_project_id != '' AND pa.projectid IS NULL;\n",
+        "gold_udfs": [
+            "in",
+            "extractkeys",
+            "xmlparser",
+            "extractprojectid",
+            "file_q13",
+            "extractcode"
+        ],
+        "predicted_udfs": [
+            "extractprojectid"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 7745,
+            "output": 3252
+        }
+    },
+    {
+        "question_id": 16,
+        "difficulty": "CHALLENGING",
+        "question": "For each project (identified by its funder, funding class, and project ID), count the number of joint publications produced by its co-author pairs before, during, and after the project's duration, considering only publications with fewer than 7 authors.",
+        "gold_sql": "WITH pairs(pubid, pubdate, projectstart, projectend, funder, class, projectid, authorpair) as ( SELECT pubid, pubdate, projectstart, projectend, funder, fclass as class, projectid, authorpair FROM combinations_q16(TABLE( SELECT pubid, pubdate, projectstart, projectend,funder,class,projectid, authorlist FROM ( select artifact_authorlists.artifactid as pubid, artifacts.date as pubdate, projects.startdate as projectstart, projects.enddate as projectend, extractfunder(projects.fundingstring) AS funder, extractclass(projects.fundingstring) AS class, extractid(projects.fundingstring) AS projectid, jsort(jsortvalues(removeshortterms(lowerize(artifact_authorlists.authorlist)))) as authorlist from projects, projects_artifacts, artifacts,artifact_authorlists where projects.id = projects_artifacts.projectid and projects_artifacts.artifactid = artifact_authorlists.artifactid and projects_artifacts.artifactid=artifacts.id and jsoncount(authorlist)<7 ) x ),2) AS xx ) SELECT funder, class, projectid, SUM(CASE WHEN cleandate(pubdate) between pstartcleaned and pendcleaned THEN 1 ELSE NULL END) AS authors_during, SUM(CASE WHEN cleandate(pubdate) < pstartcleaned THEN 1 ELSE NULL END) AS authors_before, SUM(CASE WHEN cleandate(pubdate) > pendcleaned THEN 1 ELSE NULL END) AS authors_after FROM ( SELECT projectpairs.funder, projectpairs.class, projectpairs.projectid, cleandate(projectpairs.projectstart) AS pstartcleaned, cleandate(projectpairs.projectend) AS pendcleaned, pairs.authorpair, pairs.pubdate FROM ( SELECT * FROM pairs WHERE projectid IS NOT NULL ) AS projectpairs, pairs WHERE projectpairs.authorpair = pairs.authorpair ) AS xx GROUP BY funder, class, projectid;",
+        "predicted_sql": "SELECT p.funder, p.funding_lvl0 AS funding_class, p.id AS project_id, CASE WHEN extractyear(cleandate(a.date)) < extractyear(cleandate(p.startdate)) THEN 'before' WHEN extractyear(cleandate(a.date)) >= extractyear(cleandate(p.startdate)) AND extractyear(cleandate(a.date)) <= extractyear(cleandate(p.enddate)) THEN 'during' WHEN extractyear(cleandate(a.date)) > extractyear(cleandate(p.enddate)) THEN 'after' ELSE 'unknown' END AS publication_period, aggregate_count(a.id) AS joint_publications_count FROM projects AS p JOIN projects_artifacts AS pa ON p.id = pa.projectid JOIN artifacts AS a ON pa.artifactid = a.id WHERE a.authors < 7 GROUP BY p.funder, p.funding_lvl0, p.id, publication_period ORDER BY p.funder, p.funding_lvl0, p.id, publication_period;",
+        "gold_udfs": [
+            "extractclass",
+            "jsortvalues",
+            "jsoncount",
+            "combinations_q16",
+            "cleandate",
+            "pairs",
+            "extractid",
+            "extractfunder",
+            "jsort",
+            "removeshortterms",
+            "lowerize"
+        ],
+        "predicted_udfs": [
+            "extractyear",
+            "cleandate",
+            "aggregate_count"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 12305,
+            "output": 4285
+        }
+    },
+    {
+        "question_id": 18,
+        "difficulty": "CHALLENGING",
+        "question": "For each arXiv article, find the top 5 PubMed articles with the highest Jaccard similarity, calculated using the top 10% most frequent stemmed keywords from their abstracts after removing stopwords.",
+        "gold_sql": "SELECT * FROM ( select group_column1 as arxivid, group_column2 as pubmedid, top_s from aggregate_top (TABLE(SELECT arxivid, pubmedid, JACCARD(arxivterms, pmcterms) AS similarity FROM (SELECT arxivid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS arxivterms FROM (select column1 as arxivid, column2 as abstract from file_q18('arxiv.csv', 'csv') ) xx ) xxx, (SELECT pubmedid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS pmcterms FROM (select column1 as pubmedid, column2 as abstract from file_q18('pubmed.txt', 'json')) zz )zzz),5,'arxivid','pubmedid','similarity') xxzz ) ;",
+        "predicted_sql": "\nWITH ArxivProcessed AS (\n    SELECT\n        a.id AS arxiv_id,\n        a.title AS arxiv_title,\n        CASE\n            WHEN frequentterms(stem(filterstopwords(keywords(lowerize(aa.abstract)))), 100) = '' THEN '[]'\n            ELSE CONCAT('[\"', REPLACE(TRIM(frequentterms(stem(filterstopwords(keywords(lowerize(aa.abstract)))), 100)), ' ', '\",\"'), '\"]'\n        END AS arxiv_keywords_json\n    FROM\n        artifacts AS a\n    JOIN\n        artifact_abstracts AS aa\n    ON\n        a.id = aa.artifactid\n    WHERE\n        a.source = 'arXiv'\n),\nPubmedProcessed AS (\n    SELECT\n        a.id AS pubmed_id,\n        a.title AS pubmed_title,\n        CASE\n            WHEN frequentterms(stem(filterstopwords(keywords(lowerize(aa.abstract)))), 100) = '' THEN '[]'\n            ELSE CONCAT('[\"', REPLACE(TRIM(frequentterms(stem(filterstopwords(keywords(lowerize(aa.abstract)))), 100)), ' ', '\",\"'), '\"]'\n        END AS pubmed_keywords_json\n    FROM\n        artifacts AS a\n    JOIN\n        artifact_abstracts AS aa\n    ON\n        a.id = aa.artifactid\n    WHERE\n        a.source = 'PubMed'\n),\nJaccardSimilarities AS (\n    SELECT\n        ap.arxiv_id,\n        ap.arxiv_title,\n        pp.pubmed_id,\n        pp.pubmed_title,\n        jaccard(ap.arxiv_keywords_json, pp.pubmed_keywords_json) AS jaccard_similarity\n    FROM\n        ArxivProcessed AS ap\n    CROSS JOIN\n        PubmedProcessed AS pp\n    WHERE\n        jaccard(ap.arxiv_keywords_json, pp.pubmed_keywords_json) IS NOT NULL\n)\nSELECT\n    arxiv_id,\n    arxiv_title,\n    pubmed_id,\n    pubmed_title,\n    jaccard_similarity\nFROM (\n    SELECT\n        *,\n        ROW_NUMBER() OVER (PARTITION BY arxiv_id ORDER BY jaccard_similarity DESC) as rn\n    FROM\n        JaccardSimilarities\n) AS ranked_similarities\nWHERE\n    rn <= 5\nORDER BY\n    arxiv_id, jaccard_similarity DESC;\n",
+        "gold_udfs": [
+            "jpack",
+            "jaccard",
+            "stem",
+            "file_q18",
+            "filterstopwords",
+            "aggregate_top",
+            "frequentterms",
+            "keywords"
+        ],
+        "predicted_udfs": [
+            "jaccard",
+            "stem",
+            "replace",
+            "filterstopwords",
+            "trim",
+            "concat",
+            "lowerize",
+            "frequentterms",
+            "keywords",
+            "over",
+            "row_number"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 56434,
+            "output": 8884
+        }
+    }
+]

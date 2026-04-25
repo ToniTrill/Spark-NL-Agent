@@ -1,0 +1,44 @@
+[
+    {
+        "question_id": 1,
+        "difficulty": "SIMPLE",
+        "question": "What are the IDs, along with the year, month, and day of the date for all artifacts?",
+        "gold_sql": "select id,extractyear(date), extractmonth(date), extractday(date) from artifacts;",
+        "predicted_sql": "SELECT id, extractyear(date) AS year, extractmonth(date) AS month, extractday(date) AS day FROM artifacts",
+        "gold_udfs": [
+            "extractyear",
+            "extractmonth",
+            "extractday"
+        ],
+        "predicted_udfs": [
+            "extractyear",
+            "extractmonth",
+            "extractday"
+        ],
+        "is_functional_correct": true,
+        "tokens": {
+            "input": 7018,
+            "output": 1523
+        }
+    },
+    {
+        "question_id": 2,
+        "difficulty": "MODERATE",
+        "question": "For each artifact, what is the day, month, and year of its date?",
+        "gold_sql": "SELECT * FROM extractfromdate(TABLE((select id,date from artifacts)));",
+        "predicted_sql": "SELECT id, title, extractday(date) AS day, extractmonth(date) AS month, extractyear(date) AS year FROM artifacts ORDER BY id",
+        "gold_udfs": [
+            "extractfromdate"
+        ],
+        "predicted_udfs": [
+            "extractyear",
+            "extractmonth",
+            "extractday"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 7375,
+            "output": 3366
+        }
+    }
+]

@@ -70,6 +70,8 @@ Review the Spark SQL query for technical compliance with UDFBench rules:
 5. **Syntax**: Is the query syntactically correct for Spark SQL and are custom functions in lowercase?
 6. **Subquery Aggregate**: Is a custom aggregate function (starting with 'aggregate_') inside a SELECT subquery? If so, rewrite it using a JOIN or GROUP BY.
 7. **No Extra Wrapper**: Ensure the TVF is NOT wrapped in an extra `TABLE()` (e.g., use `FROM func(...)` NOT `FROM TABLE(func(...))`).
+8. SYNTAX CERTAINTY: Do not guess. If you haven't seen the source code of the UDF, you are not allowed to use the function.
+9. **Investigation Check**: Did you use `get_udf_source_code` and `read_file_schema_discovery` (if needed) before writing this? Do not guess.
 
 If the query is compliant, return the original exactly. If not, rewrite it to meet these technical requirements.
 """
@@ -113,13 +115,14 @@ A UDF (User Defined Function) is a custom-coded extension that replaces or suppl
 - **Aggregate UDFs**: Used for grouping data (replaces COUNT, AVG, etc.).
 - **Table-Valued Functions (TVFs)**: Special functions that return tables and MUST be used to read data from external files (PubMed, Crossref, etc.).
 
-### MANDATORY WORKFLOW (DO NOT SKIP STEPS):
-1. **TABLE DISCOVERY**: Call `list_tables_sql_db` to see available tables.
-2. **SCHEMA RETRIEVAL**: Call `schema_sql_db` for the tables identified in step 1.
-3. **UDF ENUMERATION**: Call `list_udf_sql_db`. This returns ONLY the names of custom functions available. Standard Spark functions are disabled.
-4. **UDF INSPECTION**: For any UDF name you found in the previous step that seems relevant, you MUST call `get_udf_source_code`.
-5. **QUERY VALIDATION**: Once the query is written, ALWAYS call `query_checker_sql_db` to ensure it follows the strict UDF/TVF syntax rules.
-6. **FINAL EXECUTION**: Finally, call `submit_final_query` to submit your result. This call will end the process.
+### THE ENFORCED WORKFLOW:
+1. **DISCOVERY**: Call `list_tables_sql_db` and then `list_udf_sql_db`.
+2. **INSPECTION (STRICTLY MANDATORY)**: You are PROHIBITED from using any UDF in a query if you have not called `get_udf_source_code` for it in the current session. 
+   - Even if the name seems obvious (like 'extractyear'), you MUST read the code to verify if it is SCALAR or TABLE-VALUED.
+   - Using a UDF without prior inspection will result in a syntax failure.
+3. **FILE ANALYSIS**: If the source code of a UDF mentions or requires an external file path, you MUST call `read_file` to inspect the schema of that file.
+4. **VALIDATION**: Run `query_checker_sql_db`.
+5. **EXECUTION**: Call `submit_final_query`.
 
 ### CRITICAL OPERATIONAL RULES:
 1. **UDF OVER NATIVE**: Standard Spark functions are DISABLED. 

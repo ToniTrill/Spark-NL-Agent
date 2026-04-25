@@ -8,6 +8,7 @@ from pyspark.sql.types import *
 from pyspark.sql.functions import udtf
 
 # U41.	File: parses an external file (csv, xml, json) and returns a table 
+# File name: 'pubmed_q7.txt'
 def file(file_path: str, file_type:str):    
     import csv
     import os
