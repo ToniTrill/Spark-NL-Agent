@@ -49,7 +49,7 @@ from validation import validate
 
 
 # Configuration 1, 2, 3, 4, 7, 8, 12, 13, 14, 15, 16, 18 
-QUERY_INDICES = [7, 13, 18]#num preguntes que testeijar , 8, 9, 12, 13, 14, 15, 16, 18  1, 2, 3, 4, 7, 8,    
+QUERY_INDICES = [1, 2, 3, 4, 7, 8, 12, 13, 14, 15, 16, 18]#num preguntes que testeijar , 8, 9, 12, 13, 14, 15, 16, 18  1, 2, 3, 4, 7, 8,    
 REPETITIONS = 1 #fer vaires repeticions i agafar la mitjana per fer estudis per variabilitat de la IA
 FAISS_PATH = "db/faiss_index_udv" #a on es guarda la cache faiss
 JSON_PATH='db/udfbench/udfdev_v2.json' #on estan les pregutnes i respostes de la db

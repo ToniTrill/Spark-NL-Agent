@@ -17,7 +17,8 @@ from spark_toolkit.tool import (
     ListUDFSparkSQLTool,
     InvestigateSparkSQLTool,
     GetUDFCodeTool,
-    ReadFileTool
+    ReadFileTool,
+    GetUDFMetadataTool
 )
 from spark_toolkit.spark_sql import SparkSQL
 
@@ -47,8 +48,9 @@ class SparkSQLToolkit(BaseToolkit):
         tools.append(InfoSparkSQLTool(db=self.db))
         if self.use_udf:
             tools.append(ListUDFSparkSQLTool(db=self.db, allowed_udfs=self.allowed_udfs))
-            tools.append(GetUDFCodeTool(db=self.db))
+            #tools.append(GetUDFCodeTool(db=self.db))
             tools.append(ReadFileTool(db=self.db))
+            tools.append(GetUDFMetadataTool(db=self.db))
         tools.append(QueryCheckerTool(db=self.db, llm=self.llm, template=checker_template))
         #tools.append(InvestigateSparkSQLTool(db=self.db))
         tools.append(SubmitSparkSQLTool(db=self.db))

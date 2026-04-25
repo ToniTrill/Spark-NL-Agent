@@ -3,6 +3,7 @@
 
 from typing import Any, Dict, Optional
 
+from matplotlib import category
 from pydantic import BaseModel, Field, model_validator, ConfigDict
 
 from langchain_core.language_models import BaseLanguageModel
@@ -70,6 +71,9 @@ class ReadFileInput(BaseModel):
     )
     model_config = ConfigDict(extra="forbid")
 
+class CanaryInput(BaseModel):
+    test_query: str = Field(..., description="A short Spark SQL query to test a UDF or check column names. Always use LIMIT 1.")
+
 class EmptyInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -129,7 +133,7 @@ class InfoSparkSQLTool(BaseSparkSQLTool, BaseTool):
         ⚠️ IMPORTANT: The standard SQL tables above (like 'artifacts') might be EMPTY. 
         If the question mentions arXiv, PubMed, or Crossref, you MUST:
         1. Identify the file path above.
-        2. Use 'read_file' to see the column structure (e.g., column1, column2).
+        2. Use 'read_file_schema_discovery' to see the column structure (e.g., column1, column2).
         3. Use the corresponding 'file_' UDF in your SQL.
         ---------------------------------------
         """
@@ -342,18 +346,64 @@ class ReadFileTool(BaseSparkSQLTool, BaseTool):
             return f"Error reading file: {str(e)}"
         
 class UDFCanaryTool(BaseSparkSQLTool, BaseTool):
-    name: str = "udf_canary"
-    args_schema: type[BaseModel] = QuerySparkSQLInput
-    description: str = "Executes a UDF with a single sample value to see the output. Use this to verify how a UDF behaves before writing the full SQL."
-
-    def _run(self, udf_name: str, sample_input: str) -> str:
+    name: str = "udf_canary_test"
+    args_schema: type[BaseModel] = CanaryInput
+    description: str = """
+    Test a SQL snippet before the final submission. 
+    Use this to:
+    1. Verify if a UDF works with specific inputs.
+    2. DISCOVER column names (like column1, column2) when loading files.
+    3. Check the schema of a result.
+    Example: SELECT * FROM file_q7('path') LIMIT 1
+    """
+    
+    def _run(self, test_query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         try:
-            result = self.db.spark.sql(f"SELECT {udf_name}('{sample_input}')").collect()
-            return f"Test result for {udf_name}('{sample_input}'): {result[0][0]}"
+            if "limit" not in test_query.lower():
+                test_query += " LIMIT 1"
+            df = self.sb._spark.sql(test_query)
+            columns = df.columns
+            data = df.collect()
+            return f"CANARY TEST SUCCESSFUL.\n- Columns found: {columns}\n- Sample Row: {data}"
+
         except Exception as e:
             return f"Canary test failed: {str(e)}"
         
+class GetUDFMetadataTool(BaseSparkSQLTool, BaseTool):
+    name: str = "get_udf_metadata"
+    args_schema: type[BaseModel] = UDFNameInput
+    description: str = "Retrieves technical metadata about a specific UDF from the catalog (Description, Input/Output types)."
 
+    def _run(self, udf_name: str, run_manager: Optional[any] = None) -> str:
+        catalog_path = "db/udfbench/udf_catalog_v2.json"
+        if not os.path.exists(catalog_path):
+            return "ERROR: UDF catalog not found."
+
+        with open(catalog_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            udfs = data.get("udfs", [])
+        
+        udf_info = next((u for u in udfs if u['name'].lower() == udf_name.lower()), None)
+        
+        if not udf_info:
+            return f"NOT FOUND: No metadata for UDF '{udf_name}'."
+        category = udf_info.get('category', 'scalar').lower()
+        res = f"METADATA FOR '{udf_name}':\n"
+        res += f"- Description: {udf_info.get('description')}\n"
+        res += f"- Category: {udf_info.get('category')}\n"
+        res += f"- Input: {udf_info.get('input_type')}\n"
+        res += f"- Output: {udf_info.get('output_type')}\n"
+        
+        # Injecció de recordatori per a fitxers
+        res += "\n" + "!"*50
+        res += "\n🚨 STOP! MANDATORY CANARY PROTOCOL 🚨"
+        res += f"\nWARNING: Spark generates RANDOM internal column names for '{udf_name}' based on the execution plan."
+        res += "\nYou DO NOT KNOW if the columns will be called 'column1', 'id', or 'attr_0'."
+        res += "\nFORBIDDEN: You are forbidden from using 'submit_final_query' until you have the REAL column names."
+        res += f"\nNEXT STEP: Call `udf_canary_test(test_query=\"SELECT * FROM {udf_name}(...) LIMIT 1\")` to reveal the secret names."
+        res += "\n" + "!"*50
+            
+        return res
 
 class InvestigateSparkSQLTool(BaseSparkSQLTool, BaseTool):
     name: str = "investigate_sql_db"

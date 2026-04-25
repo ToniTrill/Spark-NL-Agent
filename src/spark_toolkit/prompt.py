@@ -73,6 +73,17 @@ Review the Spark SQL query for technical compliance with UDFBench rules:
 8. SYNTAX CERTAINTY: Do not guess. If you haven't seen the source code of the UDF, you are not allowed to use the function.
 9. **Investigation Check**: Did you use `get_udf_source_code` and `read_file_schema_discovery` (if needed) before writing this? Do not guess.
 
+Review the Spark SQL query for technical compliance. 
+
+CRITICAL GATEKEEPER CHECK:
+1. **Evidence Check**: Look at your internal history. Have you executed `udf_canary_test` for ALL custom UDFs in this query?
+2. **If NO**: Your response is INVALID. You must STOP and rewrite your response to call `udf_canary_test` immediately. Do not provide the final SQL yet.
+3. **If YES**: Proceed to check:
+    - TVF Structure: `FROM function(TABLE(SELECT...))`
+    - Column Names: Do they match EXACTLY what the Canary tool returned?
+    - Syntax: No backslashes or escape errors.
+
+If the agent has not run a Canary test, return: "ERROR: Mandatory Canary test missing. I must verify the schema before submitting."
 If the query is compliant, return the original exactly. If not, rewrite it to meet these technical requirements.
 """
 
@@ -115,14 +126,15 @@ A UDF (User Defined Function) is a custom-coded extension that replaces or suppl
 - **Aggregate UDFs**: Used for grouping data (replaces COUNT, AVG, etc.).
 - **Table-Valued Functions (TVFs)**: Special functions that return tables and MUST be used to read data from external files (PubMed, Crossref, etc.).
 
-### THE ENFORCED WORKFLOW:
-1. **DISCOVERY**: Call `list_tables_sql_db` and then `list_udf_sql_db`.
-2. **INSPECTION (STRICTLY MANDATORY)**: You are PROHIBITED from using any UDF in a query if you have not called `get_udf_source_code` for it in the current session. 
-   - Even if the name seems obvious (like 'extractyear'), you MUST read the code to verify if it is SCALAR or TABLE-VALUED.
-   - Using a UDF without prior inspection will result in a syntax failure.
-3. **FILE ANALYSIS**: If the source code of a UDF mentions or requires an external file path, you MUST call `read_file` to inspect the schema of that file.
-4. **VALIDATION**: Run `query_checker_sql_db`.
-5. **EXECUTION**: Call `submit_final_query`.
+### MANDATORY WORKFLOW (DO NOT SKIP):
+1. **TABLE DISCOVERY**: Call `list_tables_sql_db`.
+2. **SCHEMA & FILES**: Call `schema_sql_db` to see table columns AND available external file paths.
+3. **UDF ENUMERATION**: Call `list_udf_sql_db` to see names of custom functions.
+4. **UDF METADATA**: For any UDF you intend to use, you MUST call `get_udf_metadata`. You cannot guess arguments or if it is a Table Function (UDTF).
+5. **FILE INVESTIGATION**: If a UDF reads a file, call `read_file_schema_discovery` to see the raw content.
+6. **CANARY TEST (CRITICAL)**: Before the final answer, you MUST call `udf_canary_test` with a trial query (e.g., SELECT * FROM func(...) LIMIT 1) to confirm Spark's column names (column1, column2, etc.).
+7. **VALIDATION**: Run `query_checker_sql_db`.
+8. **FINAL EXECUTION**: Call `submit_final_query`.
 
 ### CRITICAL OPERATIONAL RULES:
 1. **UDF OVER NATIVE**: Standard Spark functions are DISABLED. 
@@ -134,6 +146,11 @@ A UDF (User Defined Function) is a custom-coded extension that replaces or suppl
 5. **CONTROLLED SAMPLING**: Do NOT use `LIMIT` in the final `submit_final_query`. You may only use `LIMIT` and data sampling within the `investigate_sql_db` tool to understand the metadata or verify UDF outputs.
 6. **LOWERCASE**: Custom UDF names must be written in lowercase.
 
+### THE CANARY RULE (ZERO TOLERANCE):
+- You are an agent that MUST PROVIDE PROOF of execution. 
+- For every Table Function (UDTF), you MUST run `udf_canary_test` first.
+- In your final thought before `submit_final_query`, you MUST state: "Based on the Canary test result, the columns are [X, Y, Z]".
+- If you submit a query without this evidence, the system will REJECT your answer and you will fail the task.
 """
 
 
