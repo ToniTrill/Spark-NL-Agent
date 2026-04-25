@@ -1,0 +1,64 @@
+[
+    {
+        "question_id": 7,
+        "difficulty": "MODERATE",
+        "question": "What is the average number of elements in the JSON lists of column 2 and column 3 in the PubMed dataset?",
+        "gold_sql": "select aggregate_avg(jsoncount(column2)),aggregate_avg(jsoncount(column3)) from file_q7('pubmed_q7.txt','json');",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "jsoncount",
+            "file_q7",
+            "aggregate_avg"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 1764,
+            "output": 389
+        }
+    },
+    {
+        "question_id": 13,
+        "difficulty": "MODERATE",
+        "question": "Retrieve the publication DOIs and their corresponding project IDs extracted from the funding information in the Crossref dataset.",
+        "gold_sql": "SELECT publicationdoi, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from jsonparse (TABLE(select column1 from file_q13('crossref.txt','text')) ,'publicationdoi','fundinginfo' ) ) AS T ) AS crossref ;",
+        "predicted_sql": "SELECT T.column1 AS publication_doi, extractprojectid(T.column2) AS project_id FROM file_q13('crossref.txt', 'json') AS T",
+        "gold_udfs": [
+            "jsonparse",
+            "file_q13",
+            "extractprojectid"
+        ],
+        "predicted_udfs": [
+            "file_q13",
+            "extractprojectid"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 19168,
+            "output": 3095
+        }
+    },
+    {
+        "question_id": 18,
+        "difficulty": "CHALLENGING",
+        "question": "For each arXiv article, find the top 5 PubMed articles with the highest Jaccard similarity, calculated using the top 10% most frequent stemmed keywords from their abstracts after removing stopwords.",
+        "gold_sql": "SELECT * FROM ( select group_column1 as arxivid, group_column2 as pubmedid, top_s from aggregate_top (TABLE(SELECT arxivid, pubmedid, JACCARD(arxivterms, pmcterms) AS similarity FROM (SELECT arxivid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS arxivterms FROM (select column1 as arxivid, column2 as abstract from file_q18('arxiv.csv', 'csv') ) xx ) xxx, (SELECT pubmedid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS pmcterms FROM (select column1 as pubmedid, column2 as abstract from file_q18('pubmed.txt', 'json')) zz )zzz),5,'arxivid','pubmedid','similarity') xxzz ) ;",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "keywords",
+            "frequentterms",
+            "file_q18",
+            "stem",
+            "aggregate_top",
+            "filterstopwords",
+            "jaccard",
+            "jpack"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 107213,
+            "output": 66310
+        }
+    }
+]

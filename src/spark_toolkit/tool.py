@@ -327,7 +327,17 @@ class ReadFileTool(BaseSparkSQLTool, BaseTool):
             
             with open(path, "r", encoding="utf-8") as f:
                 content = f.read(2000) 
-                return f"Content of {path} (first 2000 chars):\n\n{content}"
+                return f"""
+                    FILE CONTENT (First 2000 chars):
+                    {content}
+
+                    ⚠️ SPARK MAPPING NOTE: When loading this file through a UDF, 
+                    the fields will be mapped to generic columns:
+                    - First field -> column1
+                    - Second field -> column2
+                    ...and so on. 
+                    Always use column1, column2 in your SQL, NOT the names found in the JSON.
+                    """
         except Exception as e:
             return f"Error reading file: {str(e)}"
         
