@@ -1,0 +1,259 @@
+[
+    {
+        "question_id": 1,
+        "difficulty": "SIMPLE",
+        "question": "What are the IDs, along with the year, month, and day of the date for all artifacts?",
+        "gold_sql": "select id,extractyear(date), extractmonth(date), extractday(date) from artifacts;",
+        "predicted_sql": "SELECT id, extractyear(date) AS year, extractmonth(date) AS month, extractday(date) AS day FROM artifacts ORDER BY id",
+        "gold_udfs": [
+            "extractmonth",
+            "extractyear",
+            "extractday"
+        ],
+        "predicted_udfs": [
+            "extractmonth",
+            "extractyear",
+            "extractday"
+        ],
+        "is_functional_correct": true,
+        "tokens": {
+            "input": 5822,
+            "output": 2090
+        }
+    },
+    {
+        "question_id": 2,
+        "difficulty": "MODERATE",
+        "question": "For each artifact, what is the day, month, and year of its date?",
+        "gold_sql": "SELECT * FROM extractfromdate(TABLE((select id,date from artifacts)));",
+        "predicted_sql": "SELECT id, date, extractday(date) AS day, extractmonth(date) AS month, extractyear(date) AS year FROM artifacts ORDER BY id",
+        "gold_udfs": [
+            "extractfromdate"
+        ],
+        "predicted_udfs": [
+            "extractmonth",
+            "extractyear",
+            "extractday"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 6057,
+            "output": 2210
+        }
+    },
+    {
+        "question_id": 3,
+        "difficulty": "SIMPLE",
+        "question": "Show the ID along with the year, month, and day extracted from the date for each artifact.",
+        "gold_sql": "select id, extractyear(date), extractmonth_java(date), extractday_scala(date) from artifacts;",
+        "predicted_sql": "SELECT id, extractyear(date) AS year, extractmonth(date) AS month, extractday(date) AS day FROM artifacts ORDER BY id",
+        "gold_udfs": [
+            "extractday_scala",
+            "extractyear",
+            "extractmonth_java"
+        ],
+        "predicted_udfs": [
+            "extractmonth",
+            "extractyear",
+            "extractday"
+        ],
+        "is_functional_correct": true,
+        "tokens": {
+            "input": 5817,
+            "output": 2079
+        }
+    },
+    {
+        "question_id": 4,
+        "difficulty": "SIMPLE",
+        "question": "What is the average and median number of authors?",
+        "gold_sql": "select aggregate_avg(authors), aggregate_median(authors) from artifacts;",
+        "predicted_sql": "SELECT aggregate_avg(author_count) AS average_authors, aggregate_median(author_count) AS median_authors FROM (SELECT artifactid, aggregate_count(authorid) AS author_count FROM artifact_authors GROUP BY artifactid)",
+        "gold_udfs": [
+            "aggregate_median",
+            "aggregate_avg"
+        ],
+        "predicted_udfs": [
+            "aggregate_median",
+            "aggregate_count",
+            "aggregate_avg"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 6244,
+            "output": 5265
+        }
+    },
+    {
+        "question_id": 7,
+        "difficulty": "MODERATE",
+        "question": "What is the average number of elements in the JSON lists of column 2 and column 3 in the PubMed dataset?",
+        "gold_sql": "select aggregate_avg(jsoncount(column2)),aggregate_avg(jsoncount(column3)) from file_q7('pubmed_q7.txt','json');",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "file_q7",
+            "jsoncount",
+            "aggregate_avg"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 7011,
+            "output": 1422
+        }
+    },
+    {
+        "question_id": 8,
+        "difficulty": "MODERATE",
+        "question": "What is the average number of citations and the average number of authors per artifact?",
+        "gold_sql": "Select aggregate_avg(jsoncount(target)), aggregate_avg(jsoncount(authorlist)) from artifact_citations,artifact_authorlists where artifact_citations.artifactid=artifact_authorlists.artifactid;",
+        "predicted_sql": "SELECT t1.avg_citcount AS average_citations, t2.avg_authors AS average_authors FROM (SELECT aggregate_avg(citcount) AS avg_citcount FROM artifact_citations) AS t1 CROSS JOIN (SELECT aggregate_avg(authors) AS avg_authors FROM artifacts) AS t2",
+        "gold_udfs": [
+            "jsoncount",
+            "aggregate_avg"
+        ],
+        "predicted_udfs": [
+            "aggregate_avg"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 6068,
+            "output": 3036
+        }
+    },
+    {
+        "question_id": 12,
+        "difficulty": "MODERATE",
+        "question": "What are the top 10 artifact IDs with the highest noisy view counts over the last 24 months?",
+        "gold_sql": "select artifactid, addnoise(COUNT(*)) AS views fROM views_stats WHERE TO_TIMESTAMP(cleandate(date), 'yyyy/MM/dd') >= (CURRENT_TIMESTAMP - INTERVAL 24 MONTH) group by artifactid ORDER BY views desc LIMIT 10;",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "to_timestamp",
+            "cleandate",
+            "addnoise"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": true,
+        "tokens": {
+            "input": 4152,
+            "output": 1101
+        }
+    },
+    {
+        "question_id": 13,
+        "difficulty": "MODERATE",
+        "question": "Retrieve the publication DOIs and their corresponding project IDs extracted from the funding information in the Crossref dataset.",
+        "gold_sql": "SELECT publicationdoi, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from jsonparse (TABLE(select column1 from file_q13('crossref.txt','text')) ,'publicationdoi','fundinginfo' ) ) AS T ) AS crossref ;",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "file_q13",
+            "extractprojectid",
+            "jsonparse"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 4137,
+            "output": 779
+        }
+    },
+    {
+        "question_id": 14,
+        "difficulty": "CHALLENGING",
+        "question": "Find the author ID and affiliation of first authors from their most recent publication, provided that the publication is associated with a project funded by the European Commission.",
+        "gold_sql": "with aa (artifactid, authorid, affiliation, rank, authoridvalue, affiliationvalue ) as ( select artifactid, authorid, affiliation, rank, jsonparse_q14(authorid, 'value') as authoridvalue, jsonparse_q14(affiliation, 'value') as affiliationvalue from artifact_authors where affiliation is not null and affiliation <> '[]' and authorid is not null and authorid <> '[]' ) select aa.authoridvalue, aa.affiliationvalue from aa, artifacts a, projects_artifacts pr, projects p where aa.rank = 1 and aa.artifactid = a.id and p.id = pr.projectid and pr.artifactid = a.id and p.funder = 'European Commission' and (aa.authorid, cleandate(a.date)) in (select authorid, aggregate_max(cleandate(a.date)) as max_date from artifact_authors as aa, artifacts as a where aa.rank = 1 and aa.artifactid = a.id group by authorid);",
+        "predicted_sql": "\nWITH EC_Funded_First_Authors AS (\n    SELECT\n        aa.authorid,\n        aa.affiliation,\n        a.year,\n        a.date,\n        a.id AS artifactid\n    FROM artifact_authors aa\n    JOIN artifacts a ON aa.artifactid = a.id\n    JOIN projects_artifacts pa ON a.id = pa.artifactid\n    JOIN projects p ON pa.projectid = p.id\n    WHERE aa.rank = 1\n    AND p.funder = 'European Commission'\n)\nSELECT\n    e.authorid,\n    e.affiliation\nFROM EC_Funded_First_Authors e\nQUALIFY ROW_NUMBER() OVER (PARTITION BY e.authorid ORDER BY e.year DESC, e.date DESC) = 1\n",
+        "gold_udfs": [
+            "cleandate",
+            "aa",
+            "aggregate_max",
+            "jsonparse_q14",
+            "in"
+        ],
+        "predicted_udfs": [
+            "row_number",
+            "over"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 6955,
+            "output": 4115
+        }
+    },
+    {
+        "question_id": 15,
+        "difficulty": "CHALLENGING",
+        "question": "Find the artifact IDs and their corresponding project IDs extracted from Crossref funding information where the project ID is not already linked to the artifact in the projects database.",
+        "gold_sql": "SELECT artifacts.id, crossref.projectid FROM ( SELECT publicationdoi, extractprojectid(fundinginfo) as projectid FROM ( select * from extractkeys (TABLE(select * from xmlparser (TABLE(select column1 from file_q13('crossref.xml','text')),'publication') ),'publicationdoi','fundinginfo' ) ) xx ) AS crossref, artifacts WHERE publicationdoi =artifacts.id AND crossref.projectid NOT IN ( SELECT extractcode(fundingstring) as projectid FROM projects_artifacts, projects WHERE projects_artifacts.artifactid = artifacts.id and projects.id = projects_artifacts.projectid ) ;",
+        "predicted_sql": "SELECT a.id AS artifact_id, extractprojectid(a.source) AS project_id FROM artifacts AS a WHERE extractprojectid(a.source) IS NOT NULL AND NOT EXISTS (SELECT 1 FROM projects_artifacts AS pa WHERE pa.artifactid = a.id AND pa.projectid = extractprojectid(a.source));",
+        "gold_udfs": [
+            "file_q13",
+            "extractprojectid",
+            "extractkeys",
+            "xmlparser",
+            "extractcode",
+            "in"
+        ],
+        "predicted_udfs": [
+            "exists",
+            "extractprojectid"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 6072,
+            "output": 1991
+        }
+    },
+    {
+        "question_id": 16,
+        "difficulty": "CHALLENGING",
+        "question": "For each project (identified by its funder, funding class, and project ID), count the number of joint publications produced by its co-author pairs before, during, and after the project's duration, considering only publications with fewer than 7 authors.",
+        "gold_sql": "WITH pairs(pubid, pubdate, projectstart, projectend, funder, class, projectid, authorpair) as ( SELECT pubid, pubdate, projectstart, projectend, funder, fclass as class, projectid, authorpair FROM combinations_q16(TABLE( SELECT pubid, pubdate, projectstart, projectend,funder,class,projectid, authorlist FROM ( select artifact_authorlists.artifactid as pubid, artifacts.date as pubdate, projects.startdate as projectstart, projects.enddate as projectend, extractfunder(projects.fundingstring) AS funder, extractclass(projects.fundingstring) AS class, extractid(projects.fundingstring) AS projectid, jsort(jsortvalues(removeshortterms(lowerize(artifact_authorlists.authorlist)))) as authorlist from projects, projects_artifacts, artifacts,artifact_authorlists where projects.id = projects_artifacts.projectid and projects_artifacts.artifactid = artifact_authorlists.artifactid and projects_artifacts.artifactid=artifacts.id and jsoncount(authorlist)<7 ) x ),2) AS xx ) SELECT funder, class, projectid, SUM(CASE WHEN cleandate(pubdate) between pstartcleaned and pendcleaned THEN 1 ELSE NULL END) AS authors_during, SUM(CASE WHEN cleandate(pubdate) < pstartcleaned THEN 1 ELSE NULL END) AS authors_before, SUM(CASE WHEN cleandate(pubdate) > pendcleaned THEN 1 ELSE NULL END) AS authors_after FROM ( SELECT projectpairs.funder, projectpairs.class, projectpairs.projectid, cleandate(projectpairs.projectstart) AS pstartcleaned, cleandate(projectpairs.projectend) AS pendcleaned, pairs.authorpair, pairs.pubdate FROM ( SELECT * FROM pairs WHERE projectid IS NOT NULL ) AS projectpairs, pairs WHERE projectpairs.authorpair = pairs.authorpair ) AS xx GROUP BY funder, class, projectid;",
+        "predicted_sql": "WITH relevant_artifacts AS (\n    SELECT\n        p.funder,\n        p.funding_lvl0,\n        p.id AS project_id,\n        a.id AS artifact_id,\n        CASE\n            WHEN cleandate(a.date) < cleandate(p.startdate) THEN 'before'\n            WHEN cleandate(a.date) >= cleandate(p.startdate) AND cleandate(a.date) <= cleandate(p.enddate) THEN 'during'\n            WHEN cleandate(a.date) > cleandate(p.enddate) THEN 'after'\n            ELSE 'unknown'\n        END AS publication_period\n    FROM\n        projects AS p\n    JOIN\n        projects_artifacts AS pa ON p.id = pa.projectid\n    JOIN\n        artifacts AS a ON pa.artifactid = a.id\n    JOIN\n        artifact_authors AS aa1 ON a.id = aa1.artifactid\n    JOIN\n        artifact_authors AS aa2 ON a.id = aa2.artifactid\n    WHERE\n        aa1.authorid < aa2.authorid AND a.authors < 7\n),\ndistinct_relevant_artifacts AS (\n    SELECT DISTINCT\n        funder,\n        funding_lvl0,\n        project_id,\n        publication_period,\n        artifact_id\n    FROM\n        relevant_artifacts\n)\nSELECT\n    dra.funder,\n    dra.funding_lvl0 AS funding_class,\n    dra.project_id,\n    dra.publication_period,\n    aggregate_count(dra.artifact_id) AS joint_publication_count\nFROM\n    distinct_relevant_artifacts AS dra\nGROUP BY\n    dra.funder,\n    dra.funding_lvl0,\n    dra.project_id,\n    dra.publication_period\nORDER BY\n    dra.funder,\n    dra.funding_lvl0,\n    dra.project_id,\n    dra.publication_period;",
+        "gold_udfs": [
+            "pairs",
+            "jsort",
+            "jsortvalues",
+            "cleandate",
+            "extractclass",
+            "combinations_q16",
+            "jsoncount",
+            "lowerize",
+            "extractfunder",
+            "removeshortterms",
+            "extractid"
+        ],
+        "predicted_udfs": [
+            "aggregate_count",
+            "cleandate"
+        ],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 7546,
+            "output": 6396
+        }
+    },
+    {
+        "question_id": 18,
+        "difficulty": "CHALLENGING",
+        "question": "For each arXiv article, find the top 5 PubMed articles with the highest Jaccard similarity, calculated using the top 10% most frequent stemmed keywords from their abstracts after removing stopwords.",
+        "gold_sql": "SELECT * FROM ( select group_column1 as arxivid, group_column2 as pubmedid, top_s from aggregate_top (TABLE(SELECT arxivid, pubmedid, JACCARD(arxivterms, pmcterms) AS similarity FROM (SELECT arxivid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS arxivterms FROM (select column1 as arxivid, column2 as abstract from file_q18('arxiv.csv', 'csv') ) xx ) xxx, (SELECT pubmedid, JPACK( FREQUENTTERMS( STEM( FILTERSTOPWORDS( KEYWORDS( abstract ))), 10)) AS pmcterms FROM (select column1 as pubmedid, column2 as abstract from file_q18('pubmed.txt', 'json')) zz )zzz),5,'arxivid','pubmedid','similarity') xxzz ) ;",
+        "predicted_sql": null,
+        "gold_udfs": [
+            "aggregate_top",
+            "keywords",
+            "filterstopwords",
+            "file_q18",
+            "jaccard",
+            "frequentterms",
+            "jpack",
+            "stem"
+        ],
+        "predicted_udfs": [],
+        "is_functional_correct": false,
+        "tokens": {
+            "input": 4207,
+            "output": 751
+        }
+    }
+]

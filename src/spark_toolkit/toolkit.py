@@ -15,7 +15,8 @@ from spark_toolkit.tool import (
     QueryCheckerTool,
     SubmitSparkSQLTool,
     ListUDFSparkSQLTool,
-    InvestigateSparkSQLTool
+    InvestigateSparkSQLTool,
+    GetUDFCodeTool
 )
 from spark_toolkit.spark_sql import SparkSQL
 
@@ -42,9 +43,10 @@ class SparkSQLToolkit(BaseToolkit):
         checker_template = QUERY_CHECKER_UDFBENCH if self.use_udf else QUERY_CHECKER
         tools = []
         tools.append(ListSparkSQLTool(db=self.db, remind_udf=self.use_udf))
+        tools.append(InfoSparkSQLTool(db=self.db))
         if self.use_udf:
             tools.append(ListUDFSparkSQLTool(db=self.db, allowed_udfs=self.allowed_udfs))
-        tools.append(InfoSparkSQLTool(db=self.db))
+            tools.append(GetUDFCodeTool(db=self.db, llm=self.llm))
         tools.append(QueryCheckerTool(db=self.db, llm=self.llm, template=checker_template))
         #tools.append(InvestigateSparkSQLTool(db=self.db))
         tools.append(SubmitSparkSQLTool(db=self.db))

@@ -56,6 +56,12 @@ class QueryCheckerInput(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+class UDFNameInput(BaseModel):
+    udf_name: str = Field(
+        ...,
+        description="The name of the UDF to inspect (e.g., 'cleandate', 'extractyear').",
+    )
+    model_config = ConfigDict(extra="forbid")
 
 class EmptyInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -222,19 +228,21 @@ class ListUDFSparkSQLTool(BaseSparkSQLTool, BaseTool):
         output += "Syntax: SELECT ... FROM function_name(TABLE(SELECT ...), args)\n"
         output += ("\n".join(sections["table"] if sections["table"] else "None available" ))
 
+        output += "\nREMINDER: For any UDF name you found in the previous step that seems relevant, you MUST call `get_udf_source_code´"
+
         return output
 
         
 class GetUDFCodeTool(BaseSparkSQLTool, BaseTool):
     name: str = "get_udf_source_code"
-    args_schema: type[BaseModel] = QuerySparkSQLInput
+    args_schema: type[BaseModel] = UDFNameInput
     description: str = "Retrieves the source code of a specified User Defined Function (UDF) registered in the Spark session. Input should be the name of the UDF."
 
     def _run(self, udf_name: str, run_manager: Optional[any] = None) -> str:
         base_path = "db/udfbench/engines/pyspark/udfs"
         categories = ["scalar", "aggregate", "table"]
         
-        udf_name_clean = udf_name.lower()
+        udf_name_clean = udf_name.lower().strip()
         found_path = None
 
         possible_filenames = [
@@ -267,11 +275,11 @@ class GetUDFCodeTool(BaseSparkSQLTool, BaseTool):
             try:
                 with open(found_path, "r", encoding="utf-8") as f:
                     code = f.read()
-                return f"Source code found in '{found_path}':\n\n```python\n{code}\n```"
+                return f"Source code found for '{udf_name}':\n\n```python\n{code}\n```"
             except Exception as e:
                 return f"Error reading file {found_path}: {str(e)}"
         
-        return f"UDF source code for '{udf_name}' not found in categories {categories}."
+        return f"NOT FOUND: The UDF '{udf_name}' was not found in the custom library. Check the name with list_udf_sql_db."
             
 class ReadFileTool(BaseSparkSQLTool, BaseTool):
     name: str = "read_file"

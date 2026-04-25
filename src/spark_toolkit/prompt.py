@@ -115,10 +115,11 @@ A UDF (User Defined Function) is a custom-coded extension that replaces or suppl
 
 ### MANDATORY WORKFLOW (DO NOT SKIP STEPS):
 1. **TABLE DISCOVERY**: Call `list_tables_sql_db` to see available tables.
-2. **UDF INSPECTION**: Call `list_udf_sql_db`. You MUST check this list because standard Spark functions are disabled or replaced by these custom UDFs.
-3. **SCHEMA RETRIEVAL**: Call `schema_sql_db` for the tables identified in step 1.
-4. **QUERY VALIDATION**: Once the query is written, ALWAYS call `query_checker_sql_db` to ensure it follows the strict UDF/TVF syntax rules.
-5. **FINAL EXECUTION**: Finally, call `submit_final_query` to submit your result. This call will end the process.
+2. **SCHEMA RETRIEVAL**: Call `schema_sql_db` for the tables identified in step 1.
+3. **UDF ENUMERATION**: Call `list_udf_sql_db`. This returns ONLY the names of custom functions available. Standard Spark functions are disabled.
+4. **UDF INSPECTION**: For any UDF name you found in the previous step that seems relevant, you MUST call `get_udf_source_code`.
+5. **QUERY VALIDATION**: Once the query is written, ALWAYS call `query_checker_sql_db` to ensure it follows the strict UDF/TVF syntax rules.
+6. **FINAL EXECUTION**: Finally, call `submit_final_query` to submit your result. This call will end the process.
 
 ### CRITICAL OPERATIONAL RULES:
 1. **UDF OVER NATIVE**: Standard Spark functions are DISABLED. 
