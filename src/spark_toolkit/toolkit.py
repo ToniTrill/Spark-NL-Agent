@@ -18,7 +18,8 @@ from spark_toolkit.tool import (
     InvestigateSparkSQLTool,
     GetUDFCodeTool,
     ReadFileTool,
-    GetUDFMetadataTool
+    GetUDFMetadataTool,
+    UDFCanaryTool
 )
 from spark_toolkit.spark_sql import SparkSQL
 
@@ -51,6 +52,7 @@ class SparkSQLToolkit(BaseToolkit):
             #tools.append(GetUDFCodeTool(db=self.db))
             tools.append(ReadFileTool(db=self.db))
             tools.append(GetUDFMetadataTool(db=self.db))
+            tools.append(UDFCanaryTool(db=self.db))
         tools.append(QueryCheckerTool(db=self.db, llm=self.llm, template=checker_template))
         #tools.append(InvestigateSparkSQLTool(db=self.db))
         tools.append(SubmitSparkSQLTool(db=self.db))

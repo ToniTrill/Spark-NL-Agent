@@ -361,7 +361,7 @@ class UDFCanaryTool(BaseSparkSQLTool, BaseTool):
         try:
             if "limit" not in test_query.lower():
                 test_query += " LIMIT 1"
-            df = self.sb._spark.sql(test_query)
+            df = self.db._spark.sql(test_query)
             columns = df.columns
             data = df.collect()
             return f"CANARY TEST SUCCESSFUL.\n- Columns found: {columns}\n- Sample Row: {data}"
