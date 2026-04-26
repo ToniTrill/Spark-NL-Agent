@@ -292,7 +292,7 @@
             "id": "U37",
             "name": "file_q7",
             "category": "table",
-            "description": "MANDATORY for PubMed citations. Use: file_q7('pubmed_q7.txt', 'json'). Returns: column1 (id), column2 (citations JSON), column3 (authors JSON). MANDATORY: Use these column names.",
+            "description": "MANDATORY for PubMed. Use exactly: SELECT ... FROM file_q7('pubmed_q7.txt', 'json'). WARNING: This function does NOT take a TABLE() input. It reads directly from disk. It returns columns: column1 (id), column2 (citations), column3 (authors).",
             "input_type": "string (filepath), string (format)",
             "output_type": "rset"
         },

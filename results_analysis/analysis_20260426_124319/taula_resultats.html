@@ -1,0 +1,55 @@
+<html>
+<head><title>Resultats UDFBench</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #4472C4; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    tr:hover { background-color: #f5f5f5; }
+    .correcte { color: green; font-weight: bold; }
+    .incorrecte { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+    <h1>📊 Resultats UDFBench</h1>
+    <p><strong>Precisió Global:</strong> 25.00%</p>
+    <p><strong>Total preguntes:</strong> 12 | 
+    <span style='color:green'>✅ Correctes: 3</span> | 
+    <span style='color:red'>❌ Incorrectes: 9</span></p>
+    <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Difficulty</th>
+      <th>Query_Accuracy</th>
+      <th>UDF_F1</th>
+      <th>In_Tokens</th>
+      <th>Out_Tokens</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CHALLENGING</td>
+      <td>0.0%</td>
+      <td>0.267</td>
+      <td>6190.000000</td>
+      <td>4041.500000</td>
+    </tr>
+    <tr>
+      <td>MODERATE</td>
+      <td>20.0%</td>
+      <td>0.233</td>
+      <td>4752.800000</td>
+      <td>2349.400000</td>
+    </tr>
+    <tr>
+      <td>SIMPLE</td>
+      <td>66.67%</td>
+      <td>0.667</td>
+      <td>5341.333333</td>
+      <td>1989.333333</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

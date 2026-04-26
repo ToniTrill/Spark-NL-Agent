@@ -75,15 +75,17 @@ Review the Spark SQL query for technical compliance with UDFBench rules:
 
 Review the Spark SQL query for technical compliance. 
 
-CRITICAL GATEKEEPER CHECK:
-1. **Evidence Check**: Look at your internal history. Have you executed `udf_canary_test` for ALL custom UDFs in this query?
-2. **If NO**: Your response is INVALID. You must STOP and rewrite your response to call `udf_canary_test` immediately. Do not provide the final SQL yet.
-3. **If YES**: Proceed to check:
-    - TVF Structure: `FROM function(TABLE(SELECT...))`
-    - Column Names: Do they match EXACTLY what the Canary tool returned?
-    - Syntax: No backslashes or escape errors.
+### 🚨 CRITICAL GATEKEEPER CHECK:
+1. **Evidence Check**: Have you executed `udf_canary_test` for the UDFs used in this query?
+2. **If NO**: Your response is ILLEGAL. You must STOP and call `udf_canary_test` now. Use it to confirm if column names are 'column1', 'column2' or something else.
+3. **If YES**: Validate the following:
+    - **TVF Syntax**: For file_q7, file_q13, file_q18, ensure NO `TABLE()` wrapper is used (e.g., `FROM file_q7(...)` is correct).
+    - **Column Names**: Ensure they match the Canary output EXACTLY.
+    - **Explode Syntax**: Spark uses `LATERAL VIEW EXPLODE(col) AS word` or `SELECT EXPLODE(col)`.
 
-If the agent has not run a Canary test, return: "ERROR: Mandatory Canary test missing. I must verify the schema before submitting."
+If the canary test is missing, return ONLY: "ERROR: Mandatory Canary test missing. You must verify the schema with udf_canary_test before submitting."
+If compliant, return the query exactly.
+
 If the query is compliant, return the original exactly. If not, rewrite it to meet these technical requirements.
 """
 
